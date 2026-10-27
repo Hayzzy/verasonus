@@ -79,7 +79,7 @@ class SplitConfig:
     ratios: dict[str, float] = field(
         default_factory=lambda: {"train": 0.8, "val": 0.1, "test": 0.1}
     )
-    group_column: str = "track_id"
+    group_column: str = "group_id"
     stratify_columns: tuple[str, ...] = ("label",)
     generator_column: str = "generator"
     holdout_generators: tuple[str, ...] = ()

@@ -29,10 +29,10 @@ on new generators and simple edits. So we measure how detection holds up on gene
 model has never seen and after everyday edits (MP3 compression, pitch shift, phone
 re-recording), and we report those gaps as they are.
 
-> **Status: Phase 0 (scaffold).** Config loading, audio loading and resampling, windowing,
-> track-level splits and the dataset registry are implemented and tested. Everything else is a
-> documented stub (`NotImplementedError("Phase N")`) for the team to build. See the
-> [roadmap](#roadmap).
+> **Status: Phase 1 in progress.** Implemented and tested: config loading, audio loading and
+> resampling, windowing, splits, the dataset registry, and the clip table for FMA and
+> FakeMusicCaps. Everything else is a documented stub (`NotImplementedError("Phase N")`) for
+> the team to build. See the [roadmap](#roadmap).
 
 ## How the course requirements map to the code
 
@@ -55,7 +55,7 @@ and model files (this repo; model weights go to Hugging Face Hub or GitHub Relea
 verasonus/
 ├── src/verasonus/      Python package
 │   ├── config.py         YAML config -> typed settings            (implemented)
-│   ├── data/             dataset registry, metadata table, splits  (splits implemented)
+│   ├── data/             dataset registry, clip table, splits      (implemented except download)
 │   ├── preprocessing/    audio I/O, resampling, windowing          (implemented)
 │   ├── augmentation/     codecs, pitch/time/noise/loudness, phone playback, hybrid stems
 │   ├── features/         spectrograms, handcrafted features, MERT/CLAP, Demucs
@@ -172,10 +172,11 @@ rules.
 1. `python scripts/download_data.py --list` shows every source with its role and licence.
 2. Download each source into `data/raw/<source>/`. The download script is a Phase 1 stub;
    follow the access notes in DATA.md until then.
-3. `python scripts/build_metadata.py --sources sonics fakemusiccaps fma` writes
-   `data/metadata.csv`, one row per clip (Phase 1).
-4. `python scripts/make_splits.py`, or `--holdout udio` for unseen-generator tests, adds a
-   track-level split column. This one works now.
+3. `python scripts/build_metadata.py --sources fma fakemusiccaps` writes `metadata.csv` in
+   the data root, one row per clip. Scanners exist for these two sources so far.
+4. `python scripts/make_splits.py`, or `--holdout musicgen` for unseen-generator tests, adds a
+   split column. Rows with the same `group_id` (an FMA artist, otherwise a track) stay
+   together.
 
 ## Evaluation
 

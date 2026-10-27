@@ -36,8 +36,10 @@ windows:
 
 splits:
   ratios: {train: 0.8, val: 0.1, test: 0.1}
-  group_column: track_id    # every window of a track stays in the same split
-  stratify_columns: [label] # add genre once it is in the metadata table
+  # Rows with the same group_id share a split: all clips of an FMA artist, and all windows
+  # of a track.
+  group_column: group_id
+  stratify_columns: [label] # genre is only filled in for FMA so far
   generator_column: generator
   # Generators held out completely ("test_unseen") for unseen-generator tests.
   holdout_generators: []

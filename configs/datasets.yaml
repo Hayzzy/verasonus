@@ -49,6 +49,8 @@ fma:
   licence: "Audio under each artist's licence (mostly Creative Commons); metadata CC BY 4.0"
   url: https://github.com/mdeff/fma
   paper: https://arxiv.org/abs/1612.01840
+  # fma_small clips that cannot be decoded (FMA issue #41); the scanner skips them.
+  exclude: ["098565", "098567", "098569", "099134", "108925", "133297"]
 
 mtg_jamendo:
   title: MTG-Jamendo

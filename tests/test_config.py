@@ -7,7 +7,7 @@ def test_default_config_loads():
     cfg = load_config()
     assert cfg.audio.target_sample_rate == 16_000
     assert cfg.windows.length_seconds == 10.0
-    assert cfg.splits.group_column == "track_id"
+    assert cfg.splits.group_column == "group_id"
     assert cfg.splits.stratify_columns == ("label",)
     assert sum(cfg.splits.ratios.values()) == pytest.approx(1.0)
 
