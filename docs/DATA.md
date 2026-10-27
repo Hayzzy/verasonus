@@ -18,7 +18,7 @@ download, and keep all use academic and non-commercial.
 | [FMA](https://github.com/mdeff/fma) | Creative Commons music across 161 genres | Extra real music, shareable | Direct zip downloads | Per-track artist licences (mostly CC); metadata CC BY 4.0 |
 | [MTG-Jamendo](https://github.com/MTG/mtg-jamendo-dataset) | 55,701 Creative Commons tracks | Extra real music, shareable | Download script in the MTG repo | Per-track CC; metadata CC BY-NC-SA 4.0; non-commercial research only |
 | [MUSDB18-HQ](https://zenodo.org/records/3338373) | 150 songs with vocals / drums / bass / other stems (44.1 kHz WAV) | Hybrid human + AI tracks | Open Zenodo download (22.7 GB) | Non-commercial, educational use |
-| Our own set | Clips we generate on Colab, plus edited copies | Fresh test set from generators we control | Google Drive | Each model's terms (below) |
+| Our own set | Clips we generate on our own GPU, plus edited copies | Fresh test set from generators we control | Our data drive | Each model's terms (below) |
 
 The same facts are machine-readable in [`configs/datasets.yaml`](../configs/datasets.yaml)
 (`python scripts/download_data.py --list`).
@@ -41,19 +41,19 @@ The same facts are machine-readable in [`configs/datasets.yaml`](../configs/data
 - **MUSDB18-HQ.** Following Deezer's 2026 work (Rigaud et al.), we pass chosen stems through
   a neural audio codec such as EnCodec and remix them. That gives hybrid tracks where we know
   exactly which parts are "AI".
-- **Our own set.** Generated in Colab notebooks:
-  - MusicGen (weights CC BY-NC 4.0)
-  - Stable Audio Open (Stability AI Community License; gated, so accept its terms on Hugging
-    Face and set `HF_TOKEN`)
-  - ACE-Step (Apache 2.0)
-  - YuE (Apache 2.0), only if GPU time allows
+- **Our own set.** Generated on our own GPU (8 GB VRAM):
+  - MusicGen small/medium (weights CC BY-NC 4.0)
+  - Stable Audio Open in half precision (Stability AI Community License; gated, so accept its
+    terms on Hugging Face and set `HF_TOKEN`)
+  - ACE-Step with CPU offloading (Apache 2.0)
+  - YuE (Apache 2.0), only on a rented GPU (it needs about 24 GB of VRAM)
 
   Edited copies come from the robustness suite.
 
 ## Layout on disk
 
 ```
-<data_root>/             ./data locally, or VERASONUS_DATA_ROOT (e.g. Google Drive)
+<data_root>/             ./data, or VERASONUS_DATA_ROOT (e.g. D:/verasonus-data)
 ├── raw/<source>/        downloads, untouched
 ├── interim/<source>/    standardised audio: mono, target sample rate, FLAC / PCM_16
 ├── processed/           features, embeddings and caches

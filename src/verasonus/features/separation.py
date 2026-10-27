@@ -1,7 +1,7 @@
 """Optional source separation with Demucs [aspect 4] (Phase 2).
 
 Scoring vocals and accompaniment separately helps with hybrid tracks, where only some stems
-are AI-generated. Demucs is heavy: run it on Colab and cache the stems.
+are AI-generated. Demucs is heavy: run it on the GPU and cache the stems.
 """
 
 from __future__ import annotations

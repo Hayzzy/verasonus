@@ -11,4 +11,5 @@ Layout created by the scripts:
     processed/          features, embeddings and caches
     metadata.csv        one row per clip
 
-On Colab, set `VERASONUS_DATA_ROOT` to a Google Drive folder instead of using this folder.
+To keep data elsewhere, set `VERASONUS_DATA_ROOT` instead of using this folder: for example
+`D:/verasonus-data` on a second SSD, or a Google Drive folder on Colab.

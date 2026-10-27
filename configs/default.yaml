@@ -7,7 +7,7 @@ seed: 42
 
 paths:
   # Datasets live under data_root: raw/, interim/, processed/ and metadata.csv.
-  # The VERASONUS_DATA_ROOT environment variable overrides this (e.g. Google Drive on Colab).
+  # The VERASONUS_DATA_ROOT environment variable overrides this (e.g. D:/verasonus-data).
   data_root: data
   checkpoints: checkpoints
   reports: reports

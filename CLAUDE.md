@@ -40,7 +40,13 @@ visible in the code and the README:
 4. **Intelligent sensing / sense-making:** `preprocessing/`, `features/`, `explain/`, and the
    timeline in `ensemble/aggregation.py`
 
-Training runs on Google Colab, so all training code must run there as well as locally.
+**Where training runs.** On Shrey's laptop: an RTX 5070 Laptop GPU (8 GB VRAM), 32 GB RAM
+and a 24-core CPU, with datasets on a separate SSD via `VERASONUS_DATA_ROOT`.
+- Colab is an optional fallback (`notebooks/00_colab_setup.ipynb`). Keep code free of
+  machine-specific paths and pick the device at runtime (`cuda` if available, else CPU).
+- Design within 8 GB of VRAM: mixed precision and modest batch sizes.
+- Generators: MusicGen small/medium and Stable Audio Open in half precision fit; ACE-Step
+  needs CPU offloading. YuE (~24 GB) and MusicGen-large need a rented GPU.
 
 ## Phases
 
@@ -60,6 +66,8 @@ Training runs on Google Colab, so all training code must run there as well as lo
 ## Commands
 
 - Python (3.12+): `pip install -r requirements/dev.txt && pip install -e . --no-deps`
+- GPU stack (heavy, ask first): `pip install torch --index-url https://download.pytorch.org/whl/cu130`,
+  then `pip install -r requirements/ml.txt`
 - Test: `pytest`. Lint: `ruff check . && ruff format --check .`
 - API: `uvicorn verasonus.api.main:app --reload`
 - Web (`web/`): `npm ci`, `npm run dev` (port 5173; proxies `/api` to port 8000), and
@@ -81,7 +89,8 @@ Training runs on Google Colab, so all training code must run there as well as lo
 - Import torch and transformers inside functions or under `TYPE_CHECKING`, so the package
   imports without them.
 - Exact pins go in `requirements/*.txt` (local and CI); version ranges go in `pyproject.toml`
-  (Colab keeps its preinstalled torch and numpy). Never pin torch.
+  (so a Colab fallback keeps its preinstalled packages). torch is never in
+  `requirements/*.txt`: install its CUDA build from the PyTorch index (cu130 for RTX 50-series).
 - Add an entry to `docs/AI_USAGE.md` for every AI-assisted session (a course requirement).
 - Never commit audio, datasets, checkpoints, `.env` or secrets. Commit or push only when asked.
 

@@ -7,7 +7,8 @@
   re-implementing it.
 
 torch is only imported for type checking here, so the rest of the package works without it.
-Train on Colab; save checkpoints under cfg.paths.checkpoints.
+Train on the local GPU (8 GB VRAM: use mixed precision and modest batch sizes) and save
+checkpoints under cfg.paths.checkpoints so runs can resume.
 """
 
 from __future__ import annotations

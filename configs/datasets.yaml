@@ -79,8 +79,8 @@ own_set:
   role: fresh test set from generators we control
   labels: [ai]
   generators: [musicgen, stable_audio_open, ace_step, yue]
-  size: "TBD: generated on Colab in Phase 1 (YuE only if GPU time allows)"
-  access: Generated in Colab notebooks and stored on Google Drive, never in git.
+  size: "TBD: generated on the local GPU in Phase 1 (YuE needs ~24 GB VRAM, so a rented GPU only)"
+  access: Generated locally and stored under the data root, never in git.
   licence: >-
     Follows each model's terms: MusicGen weights CC BY-NC 4.0; Stable Audio Open under the
     Stability AI Community License (gated); ACE-Step and YuE Apache 2.0
