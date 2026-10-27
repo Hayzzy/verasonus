@@ -63,6 +63,20 @@ PC instead of Colab.
   stays as an optional fallback.
 - Nothing heavy was installed without the team's approval.
 
+**Follow-up the same day: first datasets.** Shrey asked Claude to set up the data drive and
+download two open datasets.
+- `.env` (not in git) sets `VERASONUS_DATA_ROOT=D:/verasonus-data`.
+- FakeMusicCaps (Zenodo record 15063698) and FMA small were downloaded into `raw/fakemusiccaps/`
+  and `raw/fma/`. Both matched their published checksums and were unzipped. The macOS metadata
+  folder (`__MACOSX`) from the FakeMusicCaps zip was moved to the Recycle Bin.
+- Claude decoded every clip with `load_audio`:
+  - FakeMusicCaps: all 27,605 clips load (5 generators × 5,521; 16 kHz mono WAV, 10.0–10.24 s).
+  - FMA small: 7,994 of 8,000 load. Six known-broken files (098565, 098567, 098569, 099134,
+    108925, 133297) must be left out.
+- FMA's metadata (`fma_metadata.zip`) was downloaded the same way. Its `tracks.csv` lists all
+  8,000 FMA small clips with genre (8 genres × 1,000 clips), artist and licence.
+- No audio went into git. In the repository, only this log changed.
+
 **Left for the team.**
 - All model, feature, augmentation and evaluation logic.
 - Re-check dataset licences before downloading.
