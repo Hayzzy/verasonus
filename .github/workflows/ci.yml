@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # 3.12: oldest supported version (Colab-like). 3.14: what the team runs locally.
+        # 3.12: oldest supported version. 3.14: what the team runs locally.
         python-version: ["3.12", "3.14"]
     steps:
       - uses: actions/checkout@v7

@@ -2,7 +2,7 @@
 
 Streaming services and tab capture (the Phase 4 extension) deliver compressed audio, so the
 detector has to survive MP3, AAC and Opus at several bitrates. Uses the ffmpeg command line,
-which is preinstalled on Colab.
+which must be installed locally (Colab already has it).
 """
 
 from __future__ import annotations

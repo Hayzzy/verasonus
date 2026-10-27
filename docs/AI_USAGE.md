@@ -53,6 +53,16 @@ first presentation (`VeraSonus - Group34.pptx`).
   widths, including the file-upload preview.
 - The extension compiles.
 
+**Follow-up the same day: local training instead of Colab.** Shrey asked to train on a personal
+PC instead of Colab.
+- Claude checked the hardware: RTX 5070 Laptop GPU (8 GB VRAM), 32 GB RAM, a 24-core CPU and a
+  free 1 TB SSD for data.
+- It confirmed that PyTorch's CUDA 13.0 build supports this GPU on Windows with Python 3.14,
+  and that the rest of the deep learning stack has matching wheels.
+- It updated the docs, configs and docstrings to a local-first workflow. The Colab notebook
+  stays as an optional fallback.
+- Nothing heavy was installed without the team's approval.
+
 **Left for the team.**
 - All model, feature, augmentation and evaluation logic.
 - Re-check dataset licences before downloading.

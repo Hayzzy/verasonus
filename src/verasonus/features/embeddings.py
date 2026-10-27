@@ -4,7 +4,7 @@
   remote code breaks on transformers 5.x, pin transformers below 5 in requirements/ml.txt.
 * CLAP, laion/larger_clap_music: expects 48 kHz audio.
 
-Compute embeddings once per window on Colab and cache them under data/processed, so probes
+Compute embeddings once per window on the GPU and cache them under data/processed, so probes
 train in seconds.
 """
 

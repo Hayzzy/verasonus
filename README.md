@@ -66,7 +66,7 @@ verasonus/
 │   └── api/              FastAPI service (/health works, /analyze returns 501 until Phase 3)
 ├── configs/            default.yaml, datasets.yaml, augment.yaml
 ├── scripts/            download, metadata, splits, train, evaluate, ONNX export, icons
-├── notebooks/          Colab-ready notebooks (00_colab_setup.ipynb)
+├── notebooks/          notebooks (00_colab_setup.ipynb is the optional Colab fallback)
 ├── tests/              pytest, synthetic audio only (no downloads)
 ├── web/                React + Vite + TypeScript + Tailwind PWA
 ├── extension/          Chrome extension, Manifest V3 skeleton (Phase 4)
@@ -79,8 +79,8 @@ verasonus/
 
 ### Local (Windows, macOS, Linux)
 
-You need Python 3.12+ and Node.js 22.12+ (we use 24 LTS). ffmpeg is needed from Phase 1 for
-the codec edits; Colab already has it.
+You need Python 3.12+ and Node.js 22.12+ (we use 24 LTS). Training also needs an NVIDIA GPU
+and ffmpeg; see [Training on your own PC](#training-on-your-own-pc-gpu).
 
 ```bash
 git clone https://github.com/Hayzzy/verasonus.git
@@ -92,11 +92,6 @@ pip install -e . --no-deps          # the package itself, editable
 pytest                              # tests
 ruff check . && ruff format --check .
 ```
-
-The deep learning stack (torch, transformers, demucs) is listed in `requirements/ml.txt` but is
-heavy, so agree as a team before installing it locally. Install torch for your machine from
-[pytorch.org](https://pytorch.org/get-started/locally/) first, then
-`pip install -r requirements/ml.txt`.
 
 **Web app** (Phase 0 preview: upload page with a local waveform preview)
 
@@ -117,9 +112,36 @@ uvicorn verasonus.api.main:app --reload   # docs at http://127.0.0.1:8000/docs
 and choose Share → Add to Home Screen. It then runs full screen and can record from the
 microphone.
 
-### Google Colab
+### Training on your own PC (GPU)
 
-All training code runs on Colab as well as locally.
+Training runs locally on an NVIDIA GPU. Our reference machine is a laptop with an RTX 5070
+Laptop GPU (8 GB VRAM), 32 GB RAM and a 24-core CPU.
+
+1. **Put the data on a roomy drive** and point the project at it, e.g. in `.env`:
+   `VERASONUS_DATA_ROOT=D:/verasonus-data`
+2. **Install PyTorch with CUDA, then the rest of the deep learning stack.** It is heavy, so
+   agree as a team first. RTX 50-series GPUs need a CUDA 12.8+ build:
+   ```bash
+   pip install torch --index-url https://download.pytorch.org/whl/cu130
+   pip install -r requirements/ml.txt
+   python -c "import torch; print(torch.cuda.is_available(), torch.cuda.get_device_name(0))"
+   ```
+3. **Install ffmpeg** (needed for the codec edits from Phase 1) and check `ffmpeg -version`.
+
+What fits in 8 GB of VRAM:
+- **Fine:** CNN / Transformer / SpecTTTra training with mixed precision; MERT and CLAP
+  embeddings; Demucs; EnCodec; MusicGen small/medium; Stable Audio Open in half precision.
+- **Slow but possible:** ACE-Step with CPU offloading.
+- **Too big:** YuE (~24 GB) and MusicGen-large. Skip them, or rent a cloud GPU for a few hours.
+
+On a laptop, keep it plugged in, use the performance power mode, stop it from sleeping during
+long runs, and save checkpoints often so a run can resume.
+
+### Google Colab (optional fallback)
+
+Training runs locally by default (see above). Colab stays available as a fallback, for example
+for a teammate without an NVIDIA GPU. The code is the same either way; only
+`VERASONUS_DATA_ROOT` and the torch install differ.
 
 1. In Colab: File → Open notebook → GitHub. Tick "Include private repos" and open
    `notebooks/00_colab_setup.ipynb`.
