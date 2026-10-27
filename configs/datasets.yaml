@@ -1,0 +1,88 @@
+# Registry of data sources, read by verasonus.data.sources.load_registry().
+# Facts checked on 2026-10-27. Re-check each licence before use. Audio is never committed
+# to git; see docs/DATA.md.
+
+sonics:
+  title: SONICS (ICLR 2025)
+  role: main training set
+  labels: [real, ai]
+  generators: [suno, udio]
+  size: "~97K full-length songs: 49,074 AI (Suno, Udio) and 48,090 real"
+  access: >-
+    AI songs download directly as MP3 from Hugging Face (awsaf49/sonics) or Kaggle.
+    Real songs are not distributed: real_songs.csv only lists YouTube IDs.
+  licence: "Dataset CC BY-NC 4.0; code and models MIT"
+  url: https://huggingface.co/datasets/awsaf49/sonics
+  paper: https://arxiv.org/abs/2408.14080
+
+fakemusiccaps:
+  title: FakeMusicCaps
+  role: which-generator attribution
+  labels: [ai]
+  generators: [musicgen, audioldm2, musicldm, mustango, stable_audio_open]
+  size: "27,605 ten-second clips (~77 h) in one 12.9 GB zip"
+  access: Open download from Zenodo (v2). The matching real MusicCaps clips are YouTube-only.
+  licence: CC BY-NC 4.0
+  url: https://zenodo.org/records/15063698
+  paper: https://arxiv.org/abs/2409.10684
+
+melody_or_machine:
+  title: Melody or Machine (MoM, TMLR)
+  role: unseen-generator testing
+  labels: [real, ai, partly_ai]
+  generators: [suno_v2, suno_v3, suno_v3.5, suno_v4, udio_v1.5, riffusion, yue, diffrhythm, voice_clone]
+  size: "~130K songs (65,475 real, 64,960 AI) with an out-of-distribution test set"
+  access: >-
+    The paper says AI songs are released on Hugging Face under controlled access for verified
+    researchers; real songs are YouTube links only. Ask the authors if no link is public yet.
+  licence: CC BY-NC 4.0 (AI songs)
+  url: null
+  paper: https://arxiv.org/abs/2512.00621
+
+fma:
+  title: Free Music Archive (FMA)
+  role: extra real music (shareable)
+  labels: [real]
+  generators: [human]
+  size: "fma_small: 8,000 x 30 s clips (7.2 GiB), up to fma_full: 106,574 full tracks"
+  access: Direct zip downloads linked from the GitHub README.
+  licence: "Audio under each artist's licence (mostly Creative Commons); metadata CC BY 4.0"
+  url: https://github.com/mdeff/fma
+  paper: https://arxiv.org/abs/1612.01840
+
+mtg_jamendo:
+  title: MTG-Jamendo
+  role: extra real music (shareable)
+  labels: [real]
+  generators: [human]
+  size: "55,701 full tracks; the low-quality raw_30s audio is ~156 GB"
+  access: scripts/download/download.py in the MTG repository (--type audio-low saves space).
+  licence: >-
+    Audio under per-track Creative Commons licences (audio_licenses.txt); metadata
+    CC BY-NC-SA 4.0; non-commercial research and academic use only
+  url: https://github.com/MTG/mtg-jamendo-dataset
+  paper: null
+
+musdb18hq:
+  title: MUSDB18-HQ
+  role: hybrid human + AI tracks (stems)
+  labels: [real]
+  generators: [human]
+  size: "150 songs, 44.1 kHz stereo WAV stems (vocals, drums, bass, other, mixture), 22.7 GB"
+  access: Open download from Zenodo.
+  licence: Non-commercial, educational use only
+  url: https://zenodo.org/records/3338373
+  paper: null
+
+own_set:
+  title: VeraSonus generated set
+  role: fresh test set from generators we control
+  labels: [ai]
+  generators: [musicgen, stable_audio_open, ace_step, yue]
+  size: "TBD: generated on Colab in Phase 1 (YuE only if GPU time allows)"
+  access: Generated in Colab notebooks and stored on Google Drive, never in git.
+  licence: >-
+    Follows each model's terms: MusicGen weights CC BY-NC 4.0; Stable Audio Open under the
+    Stability AI Community License (gated); ACE-Step and YuE Apache 2.0
+  url: null
+  paper: null

@@ -1,0 +1,9 @@
+# Store text files with LF line endings and check them out the same way on Windows,
+# macOS and Colab, so diffs and formatters agree across machines.
+* text=auto eol=lf
+
+# Binary files: never touch line endings.
+*.png binary
+*.jpg binary
+*.ico binary
+*.woff2 binary

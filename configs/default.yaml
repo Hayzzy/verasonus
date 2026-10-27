@@ -1,0 +1,43 @@
+# VeraSonus default configuration.
+# Load:      from verasonus.config import load_config; cfg = load_config()
+# Override:  load_config(overrides={"audio.target_sample_rate": 32000})
+# Relative paths are resolved from the repository root.
+
+seed: 42
+
+paths:
+  # Datasets live under data_root: raw/, interim/, processed/ and metadata.csv.
+  # The VERASONUS_DATA_ROOT environment variable overrides this (e.g. Google Drive on Colab).
+  data_root: data
+  checkpoints: checkpoints
+  reports: reports
+
+audio:
+  # Every clip, real or AI, is decoded, down-mixed, resampled to this rate and stored the
+  # same way, so models cannot learn the file format or bandwidth instead of "AI".
+  # 16 kHz matches SONICS/SpecTTTra and removes everything above 8 kHz, where generators
+  # differ trivially (MusicGen outputs 32 kHz audio, so it has nothing above 16 kHz).
+  # Try 32000 to keep more high-frequency artefacts, then check for bandwidth shortcuts.
+  target_sample_rate: 16000
+  mono: true
+  storage_format: FLAC      # lossless storage after resampling
+  storage_subtype: PCM_16
+  # Optional lossy codec applied to ALL clips, e.g. {codec: mp3, bitrate_kbps: 192},
+  # so compression history cannot separate the classes. null = off.
+  shared_codec: null
+
+windows:
+  # Tracks are cut into overlapping windows. Each window gets a score; window scores are
+  # combined into the track score and the segment timeline.
+  length_seconds: 10.0
+  hop_seconds: 5.0
+  pad_last: true            # zero-pad a final partial window instead of dropping it...
+  min_last_seconds: 2.0     # ...if it holds at least this much real (non-padded) audio
+
+splits:
+  ratios: {train: 0.8, val: 0.1, test: 0.1}
+  group_column: track_id    # every window of a track stays in the same split
+  stratify_columns: [label] # add genre once it is in the metadata table
+  generator_column: generator
+  # Generators held out completely ("test_unseen") for unseen-generator tests.
+  holdout_generators: []

@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "verasonus"
+version = "0.1.0"
+description = "Estimate whether a music track is AI-generated, show which parts, and explain why."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Shrey Yadav" }, { name = "Sushant Maramkulam Shiji" }]
+requires-python = ">=3.12"
+# Ranges, not pins: `pip install -e .` on Colab keeps its preinstalled versions.
+# Exact, tested versions for local runs and CI live in requirements/*.txt.
+dependencies = [
+    "numpy>=1.26",
+    "scipy>=1.11",
+    "soundfile>=0.12.1",
+    "soxr>=0.3.7",
+    "pandas>=2.1",
+    "pyyaml>=6.0",
+    "python-dotenv>=1.0",
+    "scikit-learn>=1.4",
+    "librosa>=0.10.2",
+    "matplotlib>=3.8",
+    "tqdm>=4.66",
+    "huggingface_hub>=0.23",
+]
+
+[project.optional-dependencies]
+api = ["fastapi>=0.110", "uvicorn>=0.29", "python-multipart>=0.0.9"]
+# Heavy. Colab already has torch; ask the team before installing these locally.
+ml = ["torch>=2.4", "transformers>=4.44", "demucs>=4.0.1", "onnx>=1.16", "onnxruntime>=1.18"]
+dev = ["pytest>=8.0", "ruff>=0.6", "httpx>=0.27"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+# pycodestyle, pyflakes, import order, bugbear, pyupgrade
+select = ["E", "W", "F", "I", "B", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"

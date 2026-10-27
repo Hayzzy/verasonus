@@ -1,0 +1,8 @@
+# Deep learning stack (Phase 2). Heavy: ask the team before installing it locally.
+# torch is deliberately NOT pinned here. Colab ships a matching CUDA build already; locally,
+# install the build for your machine from https://pytorch.org/get-started/locally/ first.
+-r base.txt
+transformers==5.20.2
+demucs==4.1.0
+onnx==1.23.2
+onnxruntime==1.31.0

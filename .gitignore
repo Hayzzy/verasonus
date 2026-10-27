@@ -1,0 +1,86 @@
+# Golden rule: audio, datasets, model weights and secrets never go into git.
+# Patterns starting with "/" only match at the repository root.
+
+# --- Data and audio (see docs/DATA.md) ---
+/data/*
+!/data/README.md
+*.wav
+*.mp3
+*.flac
+*.ogg
+*.oga
+*.opus
+*.m4a
+*.aac
+*.aif
+*.aiff
+*.wma
+*.mp4
+*.webm
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.7z
+
+# --- Model weights, checkpoints and experiment logs ---
+# Share trained models through Hugging Face Hub or GitHub Releases instead.
+/checkpoints/
+*.pt
+*.pth
+*.ckpt
+*.onnx
+*.safetensors
+*.joblib
+*.pkl
+*.npy
+*.npz
+lightning_logs/
+mlruns/
+wandb/
+/outputs/
+/runs/
+
+# --- Secrets ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+kaggle.json
+credentials*.json
+client_secret*.json
+service-account*.json
+.secrets/
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+.ipynb_checkpoints/
+
+# --- Node: web app and extension ---
+node_modules/
+*.local
+npm-debug.log*
+
+# --- Editors and operating systems ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Claude Code personal settings (shared project settings may be committed) ---
+.claude/settings.local.json
