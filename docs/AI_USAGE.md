@@ -77,6 +77,20 @@ download two open datasets.
   8,000 FMA small clips with genre (8 genres × 1,000 clips), artist and licence.
 - No audio went into git. In the repository, only this log changed.
 
+**Follow-up the same day: clip table.** Shrey asked Claude to build the clip table for the two
+downloaded datasets.
+- Claude implemented `scan` for FMA and FakeMusicCaps (`data/sources.py`) and
+  `build_metadata` and `validate_metadata` (`data/metadata.py`), and finished
+  `scripts/build_metadata.py`.
+- It added a `group_id` column (the artist for FMA, otherwise the track) and made splits group
+  by it, so no FMA artist lands in two splits. FakeMusicCaps clips stay separate groups:
+  every caption exists for every generator, so grouping them would break
+  leave-one-generator-out.
+- The six broken FMA clips are listed under `exclude` in `configs/datasets.yaml`.
+- 14 new tests use a tiny synthetic data root. All 46 tests and ruff pass.
+- `D:/verasonus-data/metadata.csv` now has 35,599 rows (7,994 FMA, 27,605 FakeMusicCaps). Both
+  split protocols ran on it in memory without errors, and no artist spans two splits.
+
 **Left for the team.**
 - All model, feature, augmentation and evaluation logic.
 - Re-check dataset licences before downloading.

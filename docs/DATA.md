@@ -30,14 +30,20 @@ The same facts are machine-readable in [`configs/datasets.yaml`](../configs/data
   break YouTube's terms, so check with the module team first. Otherwise, use FMA or
   MTG-Jamendo as the real side and match genres where possible.
 - **FakeMusicCaps.** Every clip is labelled by generator, which makes it our attribution set.
-  The matching real MusicCaps clips are YouTube-only.
+  The matching real MusicCaps clips are YouTube-only. Clips are 16 kHz mono float WAV,
+  10.0–10.24 s long. All five generators used the same 5,521 MusicCaps captions, so each file
+  name appears once per generator. The clip table treats each clip as its own group: grouping a
+  caption's five clips would leave leave-one-generator-out nothing to split. The cost is that
+  one caption can appear in both train and test.
 - **Melody or Machine.** It trains on Suno v2/v3.5, Udio v1.5 and DiffRhythm. Its
   out-of-distribution test set uses Riffusion, Suno v3, Suno v4, YuE and voice clones. Its
   "Mostly Fake" tier has partly-AI tracks: real lyrics over AI audio, and voice-cloned covers.
   Request access from the authors early.
 - **FMA and MTG-Jamendo.** Openly licensed real music, and the shareable part of our dataset.
   Respect each track's NC/ND/SA terms and keep attribution. For MTG-Jamendo, `--type audio-low`
-  saves space (~156 GB for `raw_30s`).
+  saves space (~156 GB for `raw_30s`). For FMA, also download `fma_metadata.zip`: its
+  `tracks.csv` gives each clip's genre, artist and licence. Six fma_small clips cannot be
+  decoded, so `exclude` in `configs/datasets.yaml` skips them.
 - **MUSDB18-HQ.** Following Deezer's 2026 work (Rigaud et al.), we pass chosen stems through
   a neural audio codec such as EnCodec and remix them. That gives hybrid tracks where we know
   exactly which parts are "AI".
@@ -63,8 +69,13 @@ The same facts are machine-readable in [`configs/datasets.yaml`](../configs/data
 ## Metadata table
 
 One row per clip ([`src/verasonus/data/metadata.py`](../src/verasonus/data/metadata.py)):
-`clip_id`, `track_id`, `source_dataset`, `label` (real / ai / partly_ai), `generator`, `path`,
-`original_sample_rate`, `codec`, `duration_seconds`, `licence`, `split`, `genre`.
+`clip_id`, `track_id`, `group_id`, `source_dataset`, `label` (real / ai / partly_ai),
+`generator`, `path` (relative to the data root), `original_sample_rate`, `codec`,
+`duration_seconds`, `licence`, `split`, `genre`.
+
+`group_id` is what a split keeps together: the artist for FMA, otherwise the track. Build the
+table with `python scripts/build_metadata.py --sources fma fakemusiccaps` (the sources with a
+scanner so far). It checks every row before writing.
 
 ## Rules that keep results honest
 
@@ -73,9 +84,9 @@ One row per clip ([`src/verasonus/data/metadata.py`](../src/verasonus/data/metad
    pass everything through one shared lossy codec. Otherwise models learn bandwidth or file
    format instead of "AI": MusicGen outputs 32 kHz audio (nothing above 16 kHz), while many
    real tracks are 44.1 kHz.
-2. **Split by track.** All windows of a track share one split
-   ([`data/splits.py`](../src/verasonus/data/splits.py)). Leave-one-generator-out moves whole
-   generators into `test_unseen`.
+2. **Split by group.** All windows of a track share one split, and so do all tracks of an FMA
+   artist (`group_id`, [`data/splits.py`](../src/verasonus/data/splits.py)).
+   Leave-one-generator-out moves whole generators into `test_unseen`.
 3. **Balance genres** where possible: add `genre` to `splits.stratify_columns`.
 4. **Audit shortcuts.** Duration, sample rate, codec, loudness, leading silence and
    bandwidth should not predict the label on their own (`evaluation.protocols.shortcut_checks`).

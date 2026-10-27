@@ -55,7 +55,11 @@ and a 24-core CPU, with datasets on a separate SSD via `VERASONUS_DATA_ROOT`.
     `preprocessing/windowing.py`, `data/splits.py`, and `data/sources.load_registry`.
   - Everything else is a stub: a docstring and signature that raises
     `NotImplementedError("Phase N")`.
-- **Phase 1:** data pipeline, metadata table, splits, augmentation suite, classical baselines.
+- **Phase 1 (in progress):** data pipeline, metadata table, splits, augmentation suite,
+  classical baselines.
+  - Done: FakeMusicCaps, FMA small and FMA metadata are in the data root, and the clip table
+    covers them (`data/sources.scan`, `data/metadata.build_metadata` and
+    `validate_metadata`, written to `<data_root>/metadata.csv`).
 - **Phase 2:** deep models, embedding probes, ensemble, calibration, full evaluation reports.
 - **Phase 3:** FastAPI service and the polished PWA web app (the working prototype).
 - **Phase 4:** Chrome extension (MV3, `chrome.tabCapture` + offscreen document), then iPhone
@@ -96,13 +100,16 @@ and a 24-core CPU, with datasets on a separate SSD via `VERASONUS_DATA_ROOT`.
 
 ## Data rules
 
-- **Metadata table** (`data/metadata.py`): one row per clip with source dataset, label
-  (real/ai/partly_ai), generator, original sample rate, codec, duration, licence and split.
+- **Metadata table** (`data/metadata.py`): one row per clip with track and group ids, source
+  dataset, label (real/ai/partly_ai), generator, a path relative to the data root, original
+  sample rate, codec, duration, licence, split and genre.
 - **Same processing for every clip:** resample everything to one configurable rate (default
   16 kHz) and encode real and AI audio the same way. Otherwise models learn format or
   bandwidth; MusicGen is 32 kHz, so it has nothing above 16 kHz.
-- **Splits:** all windows of a track stay in one split; leave-one-generator-out puts whole
-  generators in `test_unseen`; balance genres where possible.
+- **Splits:** rows with the same `group_id` stay in one split (all windows of a track, all
+  tracks of an FMA artist). FakeMusicCaps clips are their own groups, because every caption
+  exists for every generator. Leave-one-generator-out puts whole generators in
+  `test_unseen`. Balance genres where possible.
 - **Robustness suite** (`configs/augment.yaml`): MP3/AAC/Opus at several bitrates, ±2
   semitone pitch shift, time stretch, added noise, loudness normalisation, and simulated phone
   playback and re-recording.
