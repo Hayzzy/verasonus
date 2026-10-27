@@ -1,0 +1,59 @@
+# AI usage log
+
+Our course requires us to document AI assistance. Add an entry for every session in which an
+AI tool helped. Keep each entry factual: what was asked, what the AI produced, what we checked
+or changed, and what is still ours to do.
+
+| Date | Tool | Prompted by | Summary |
+|---|---|---|---|
+| 2026-10-27 | Claude Code (Claude Opus 5.5) | Shrey Yadav | Phase 0 repository scaffold |
+
+---
+
+## 2026-10-27 · Phase 0 repository scaffold
+
+**Tool.** Claude Code desktop app, model Claude Opus 5.5.
+
+**Prompted by.** Shrey Yadav. Inputs were the team's project brief and the slides from the
+first presentation (`VeraSonus - Group34.pptx`).
+
+**What we asked for.**
+- Propose a repository structure and wait for approval.
+- Python packaging with pinned requirements, and YAML configs.
+- Module stubs, plus small tested utilities.
+- A React + Tailwind web app and a Manifest V3 extension skeleton, themed like the slides.
+- pytest tests and GitHub Actions CI.
+- README, `docs/DATA.md`, `CLAUDE.md` and this log.
+- A first commit, a private GitHub repo, and Sushant (`MSSushant`) as collaborator.
+
+**Decisions the team made.**
+- Approved the proposed structure.
+- Repo lives at `Hayzzy/verasonus` on Shrey's account, with Sushant as collaborator. GitHub
+  allows two owners only through an organisation.
+- Private repository, MIT licence.
+- Node.js installed as a portable copy in Shrey's user folder, not system-wide.
+
+**What the AI did.**
+- **Theme:** read the slide deck (colours, fonts, layout motifs) to build the web theme, and
+  recreated the title-slide look in CSS instead of reusing the deck's stock photo.
+- **Online checks:** current package versions, and dataset facts (licences, access, sizes).
+  Pins use releases that were at least a week old where possible.
+- **Code:** wrote every file in the first commit.
+  - Implemented: config loading, audio loading and resampling, windowing, track-level and
+    generator-held-out splits, and the dataset registry.
+  - Everything else (features, models, ensemble, evaluation, augmentation, API inference) is
+    documented stubs for the team to implement.
+- **Tests and CI:** 32 pytest tests using synthetic audio only, plus a GitHub Actions workflow
+  (ruff, pytest, web build, extension build).
+- **Icons and visuals:** the logo icons (`scripts/make_icons.py`) and the README screenshot.
+
+**How it was checked.**
+- ruff and all 32 tests pass locally (Python 3.14).
+- The web app type-checks and builds, and was inspected in a browser at desktop and phone
+  widths, including the file-upload preview.
+- The extension compiles.
+
+**Left for the team.**
+- All model, feature, augmentation and evaluation logic.
+- Re-check dataset licences before downloading.
+- Request access to Melody or Machine.

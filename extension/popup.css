@@ -1,0 +1,60 @@
+/* Same palette as the web app and the slides. */
+:root {
+  --ink: #000;
+  --card: #0a0a0a;
+  --flame: #ff7a00;
+  --ember: #d56a46;
+  --apricot: #f7a760;
+  --mist: #b3b3b3;
+}
+
+body {
+  width: 300px;
+  margin: 0;
+  padding: 16px;
+  background: var(--ink);
+  color: #fff;
+  font: 14px/1.5 'Source Sans 3', 'Segoe UI', system-ui, sans-serif;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+h1 {
+  margin: 0;
+  font: 700 18px/1.2 Inter, 'Segoe UI', system-ui, sans-serif;
+  letter-spacing: -0.03em;
+}
+
+.eyebrow {
+  margin: 14px 0 4px;
+  color: var(--apricot);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.075em;
+  text-transform: uppercase;
+}
+
+button {
+  width: 100%;
+  height: 40px;
+  margin-top: 8px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--flame), var(--ember));
+  color: #fff;
+  font: 600 14px Inter, 'Segoe UI', system-ui, sans-serif;
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.muted {
+  color: var(--mist);
+  font-size: 12px;
+}
