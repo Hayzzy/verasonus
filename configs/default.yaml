@@ -32,7 +32,10 @@ windows:
   length_seconds: 10.0
   hop_seconds: 5.0
   pad_last: true            # zero-pad a final partial window instead of dropping it...
-  min_last_seconds: 2.0     # ...if it holds at least this much real (non-padded) audio
+  # ...if it holds at least this much real (non-padded) audio. Kept high so mostly-silent
+  # padded windows cannot become a shortcut: at 2.0, nearly every clip got a final window
+  # that was about half zeros. Clips shorter than this get no window at all.
+  min_last_seconds: 8.0
 
 splits:
   ratios: {train: 0.8, val: 0.1, test: 0.1}
