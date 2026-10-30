@@ -85,7 +85,10 @@ scanner so far). It checks every row before writing.
    `audio.target_sample_rate` (16 kHz by default), store as FLAC / PCM_16, and optionally
    pass everything through one shared lossy codec. Otherwise models learn bandwidth or file
    format instead of "AI": MusicGen outputs 32 kHz audio (nothing above 16 kHz), while many
-   real tracks are 44.1 kHz.
+   real tracks are 44.1 kHz. We found this in practice: a first baseline scored ROC-AUC 0.9997
+   almost entirely from the 6.4–8 kHz band, where the resampler used on the real clips leaves
+   a steep cut-off. Standardisation now low-passes every clip at 7 kHz (`audio.lowpass_hz`)
+   and matches loudness (`audio.target_rms_dbfs`).
 2. **Split by group.** All windows of a track share one split, and so do all tracks of an FMA
    artist (`group_id`, [`data/splits.py`](../src/verasonus/data/splits.py)).
    Leave-one-generator-out moves whole generators into `test_unseen`.
