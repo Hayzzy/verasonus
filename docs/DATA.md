@@ -47,7 +47,7 @@ The same facts are machine-readable in [`configs/datasets.yaml`](../configs/data
 - **MUSDB18-HQ.** Following Deezer's 2026 work (Rigaud et al.), we pass chosen stems through
   a neural audio codec such as EnCodec and remix them. That gives hybrid tracks where we know
   exactly which parts are "AI".
-- **Our own set.** Generated on our own GPU (8 GB VRAM):
+- **Our own set.** Generated on our own GPU:
   - MusicGen small/medium (weights CC BY-NC 4.0)
   - Stable Audio Open in half precision (Stability AI Community License; gated, so accept its
     terms on Hugging Face and set `HF_TOKEN`)
@@ -62,6 +62,7 @@ The same facts are machine-readable in [`configs/datasets.yaml`](../configs/data
 <data_root>/             ./data, or VERASONUS_DATA_ROOT (e.g. D:/verasonus-data)
 ├── raw/<source>/        downloads, untouched
 ├── interim/<source>/    standardised audio: mono, target sample rate, FLAC / PCM_16
+│                        (scripts/standardise_audio.py; mirrors raw/, so raw/x/y.mp3 -> interim/x/y.flac)
 ├── processed/           features, embeddings and caches
 └── metadata.csv         one row per clip
 ```

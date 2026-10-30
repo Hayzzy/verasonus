@@ -30,8 +30,8 @@ model has never seen and after everyday edits (MP3 compression, pitch shift, pho
 re-recording), and we report those gaps as they are.
 
 > **Status: Phase 1 in progress.** Implemented and tested: config loading, audio loading and
-> resampling, windowing, splits, the dataset registry, and the clip table for FMA and
-> FakeMusicCaps. Everything else is a documented stub (`NotImplementedError("Phase N")`) for
+> resampling, windowing, splits, the dataset registry, the clip table for FMA and
+> FakeMusicCaps, and audio standardisation. Everything else is a documented stub (`NotImplementedError("Phase N")`) for
 > the team to build. See the [roadmap](#roadmap).
 
 ## How the course requirements map to the code
@@ -56,7 +56,7 @@ verasonus/
 ├── src/verasonus/      Python package
 │   ├── config.py         YAML config -> typed settings            (implemented)
 │   ├── data/             dataset registry, clip table, splits      (implemented except download)
-│   ├── preprocessing/    audio I/O, resampling, windowing          (implemented)
+│   ├── preprocessing/    audio I/O, resampling, standardising, windowing (implemented)
 │   ├── augmentation/     codecs, pitch/time/noise/loudness, phone playback, hybrid stems
 │   ├── features/         spectrograms, handcrafted features, MERT/CLAP, Demucs
 │   ├── models/           classical, deep, probes, unsupervised
@@ -114,8 +114,7 @@ microphone.
 
 ### Training on your own PC (GPU)
 
-Training runs locally on an NVIDIA GPU. Our reference machine is a laptop with an RTX 5070
-Laptop GPU (8 GB VRAM), 32 GB RAM and a 24-core CPU.
+We train on our own machine with an NVIDIA GPU.
 
 1. **Put the data on a roomy drive** and point the project at it, e.g. in `.env`:
    `VERASONUS_DATA_ROOT=D:/verasonus-data`
@@ -128,14 +127,9 @@ Laptop GPU (8 GB VRAM), 32 GB RAM and a 24-core CPU.
    ```
 3. **Install ffmpeg** (needed for the codec edits from Phase 1) and check `ffmpeg -version`.
 
-What fits in 8 GB of VRAM:
-- **Fine:** CNN / Transformer / SpecTTTra training with mixed precision; MERT and CLAP
-  embeddings; Demucs; EnCodec; MusicGen small/medium; Stable Audio Open in half precision.
-- **Slow but possible:** ACE-Step with CPU offloading.
-- **Too big:** YuE (~24 GB) and MusicGen-large. Skip them, or rent a cloud GPU for a few hours.
-
-On a laptop, keep it plugged in, use the performance power mode, stop it from sleeping during
-long runs, and save checkpoints often so a run can resume.
+Use mixed precision and modest batch sizes, and save checkpoints often so a long run can
+resume. Generators that need more GPU memory than you have (such as YuE) can run on a rented
+cloud GPU.
 
 ### Google Colab (optional fallback)
 
@@ -177,6 +171,9 @@ rules.
 4. `python scripts/make_splits.py`, or `--holdout musicgen` for unseen-generator tests, adds a
    split column. Rows with the same `group_id` (an FMA artist, otherwise a track) stay
    together.
+5. `python scripts/standardise_audio.py` writes a 16 kHz mono FLAC copy of every clip to
+   `interim/`, processed the same way for real and AI audio. Add `--audit 200` to compare
+   bandwidth per generator. Rerunning skips clips that are already done.
 
 ## Evaluation
 
