@@ -15,6 +15,7 @@ checked it.
 | 2026-10-30 | First classical baseline | Handcrafted features, classical models (SVM, random forest, gradient boosting), metrics and `scripts/train.py` | 9 new tests; trained and evaluated on our data |
 | 2026-10-30 | Check the near-perfect baseline for shortcuts | Found that one feature in the 6.4–8 kHz band measured the resampler, not AI (controlled re-resampling test); added a 7 kHz low-pass and loudness matching to standardisation | 3 new tests; low-pass comparison on a 12% sample; full rebuild and retrain |
 | 2026-10-31 | Unseen-generator test | `scripts/unseen_generators.py` (holds each generator out in turn, retrains, scores it) | Ran all five folds; real test clips identical across folds; seen scores match the main baseline |
+| 2026-10-31 | Decision threshold | `threshold_at_fpr` and `evaluation.max_fpr_real`: the AI threshold is picked on val clips so at most 5% of real val clips are flagged; both training scripts use it | 1 new test; retrained both models and reran the unseen test; 0.5 results kept alongside |
 
 Decisions were ours throughout: the structure, the private repo and MIT licence, which
 datasets to use, and training locally.

@@ -180,7 +180,9 @@ rules.
    once the feature functions in `features/handcrafted.py` are written.
 7. `python scripts/train.py --model gradient_boosting` tunes on val and scores test, and
    `python scripts/unseen_generators.py` reruns it once per AI generator with that generator
-   held out, to see how well it catches a generator it never saw.
+   held out, to see how well it catches a generator it never saw. Both call a clip AI above a
+   threshold picked on val so that at most 5% of real clips are flagged
+   (`evaluation.max_fpr_real`).
 
 ## Evaluation
 
