@@ -174,6 +174,9 @@ rules.
 5. `python scripts/standardise_audio.py` writes a 16 kHz mono FLAC copy of every clip to
    `interim/`, processed the same way for real and AI audio. Add `--audit 200` to compare
    bandwidth per generator. Rerunning skips clips that are already done.
+6. `python scripts/extract_features.py` cuts every clip into windows and saves one feature
+   vector per window to `processed/handcrafted/` (`--limit 200` for a quick trial). It runs
+   once the feature functions in `features/handcrafted.py` are written.
 
 ## Evaluation
 
