@@ -58,6 +58,22 @@ def false_positive_rate(y_true: np.ndarray, y_score: np.ndarray, threshold: floa
     return float((np.asarray(y_score)[real] >= threshold).mean())
 
 
+def threshold_at_fpr(y_true: np.ndarray, y_score: np.ndarray, max_fpr: float) -> float:
+    """Lowest AI threshold that flags at most ``max_fpr`` of the real tracks.
+
+    Pick it on validation data, then apply it unchanged to test: the lowest such threshold
+    catches the most AI tracks while keeping false accusations of real music within budget.
+    """
+    real = np.sort(np.asarray(y_score, dtype=float)[np.asarray(y_true) == 0])[::-1]
+    if not len(real):
+        raise ValueError("no real tracks to set a threshold on")
+    allowed = int(np.floor(max_fpr * len(real)))  # real tracks we may flag
+    if allowed >= len(real):
+        return float(real[-1])
+    # Just above the highest real score we must not flag, so ties are not flagged either.
+    return float(np.nextafter(real[allowed], np.inf))
+
+
 def confusion(y_true: np.ndarray, y_pred: np.ndarray, labels: Sequence[str]) -> np.ndarray:
     """Confusion matrix (rows: true, columns: predicted), also for generator attribution."""
     return skm.confusion_matrix(y_true, y_pred, labels=list(labels))

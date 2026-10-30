@@ -7,6 +7,7 @@ from verasonus.evaluation.metrics import (
     equal_error_rate,
     expected_calibration_error,
     false_positive_rate,
+    threshold_at_fpr,
 )
 from verasonus.features.handcrafted import (
     decoder_artefact_features,
@@ -61,6 +62,19 @@ def test_eer_ece_and_fpr():
     np.testing.assert_array_equal(
         confusion(["a", "b", "b"], ["a", "a", "b"], ["a", "b"]), [[1, 0], [1, 1]]
     )
+
+
+def test_threshold_at_fpr_caps_flagged_real_tracks():
+    real = np.linspace(0.0, 0.9, 10)  # ten real tracks
+    y = np.r_[np.zeros(10), np.ones(3)]
+    scores = np.r_[real, [0.5, 0.95, 0.99]]
+    t = threshold_at_fpr(y, scores, max_fpr=0.1)  # may flag one real track
+    assert false_positive_rate(y, scores, t) == pytest.approx(0.1)
+    assert 0.8 < t <= 0.9  # lowest such threshold: catches both AI tracks above 0.9
+    assert false_positive_rate(y, scores, threshold_at_fpr(y, scores, 0.0)) == 0.0
+    assert threshold_at_fpr(y, scores, 1.0) == 0.0
+    with pytest.raises(ValueError):
+        threshold_at_fpr(np.ones(3), scores[:3], 0.1)
 
 
 @pytest.mark.parametrize("name", ["svm", "random_forest", "gradient_boosting"])

@@ -53,3 +53,9 @@ splits:
   generator_column: generator
   # Generators held out completely ("test_unseen") for unseen-generator tests.
   holdout_generators: []
+
+evaluation:
+  # A track is called AI when its score passes a threshold chosen on the val split: the
+  # lowest one that flags at most this share of real val tracks. Flagging a human artist is
+  # the costliest error, so we cap it instead of using a fixed 0.5.
+  max_fpr_real: 0.05
