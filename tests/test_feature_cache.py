@@ -86,9 +86,10 @@ def test_feature_names_must_match(setup):
         build_feature_table(df, cfg, unstable)
 
 
-def test_unwritten_features_raise(setup):
+def test_handcrafted_features_fill_the_table(setup):
     from verasonus.features.handcrafted import extract_handcrafted
 
     cfg, df = setup
-    with pytest.raises(NotImplementedError):
-        build_feature_table(df, cfg, extract_handcrafted)
+    windows, features, columns = build_feature_table(df, cfg, extract_handcrafted)
+    assert features.shape == (6, len(columns))
+    assert np.isfinite(features).all()
