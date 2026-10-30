@@ -2,6 +2,7 @@
 
 For each clip, real or AI, the same steps run in the same order:
     decode -> mono -> resample to cfg.audio.target_sample_rate
+    -> low-pass at cfg.audio.lowpass_hz -> scale to cfg.audio.target_rms_dbfs
     -> optional shared lossy codec round trip (cfg.audio.shared_codec)
     -> save as FLAC / PCM_16 under data/interim
 Afchar et al. (2024) show that detectors happily learn such shortcuts, so also audit the
@@ -13,7 +14,7 @@ from __future__ import annotations
 from pathlib import Path, PurePosixPath
 
 import numpy as np
-from scipy.signal import welch
+from scipy.signal import butter, sosfiltfilt, welch
 
 from verasonus.config import AudioConfig
 from verasonus.preprocessing.audio_io import AudioInfo, audio_info, load_audio, save_audio
@@ -41,6 +42,10 @@ def standardise_file(src: Path, dst: Path, audio_cfg: AudioConfig) -> AudioInfo:
     audio, sample_rate = load_audio(
         src, target_sr=audio_cfg.target_sample_rate, mono=audio_cfg.mono
     )
+    if audio_cfg.lowpass_hz:
+        audio = lowpass(audio, sample_rate, audio_cfg.lowpass_hz)
+    if audio_cfg.target_rms_dbfs is not None:
+        audio = match_loudness(audio, audio_cfg.target_rms_dbfs)
     if audio_cfg.shared_codec:
         # Imported here so standardising without a codec never needs ffmpeg.
         from verasonus.augmentation.codecs import reencode
@@ -55,6 +60,24 @@ def standardise_file(src: Path, dst: Path, audio_cfg: AudioConfig) -> AudioInfo:
         subtype=audio_cfg.storage_subtype,
     )
     return audio_info(dst)
+
+
+def lowpass(audio: np.ndarray, sample_rate: int, cutoff_hz: float) -> np.ndarray:
+    """Steep zero-phase low-pass filter (12th-order Butterworth, run forwards and backwards)."""
+    sos = butter(12, cutoff_hz, btype="low", fs=sample_rate, output="sos")
+    return sosfiltfilt(sos, audio).astype(np.float32)
+
+
+def match_loudness(audio: np.ndarray, target_rms_dbfs: float, max_peak: float = 0.99) -> np.ndarray:
+    """Scale ``audio`` to an RMS level of ``target_rms_dbfs``, turned down if it would clip."""
+    rms = float(np.sqrt(np.mean(np.square(audio, dtype=np.float64))))
+    if rms == 0:
+        return audio
+    gain = 10 ** (target_rms_dbfs / 20) / rms
+    peak = float(np.abs(audio).max()) * gain
+    if peak > max_peak:
+        gain *= max_peak / peak
+    return (audio * gain).astype(np.float32)
 
 
 def effective_bandwidth_hz(path: Path, floor_db: float = -60.0) -> float:

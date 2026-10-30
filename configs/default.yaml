@@ -25,6 +25,13 @@ audio:
   # Optional lossy codec applied to ALL clips, e.g. {codec: mp3, bitrate_kbps: 192},
   # so compression history cannot separate the classes. null = off.
   shared_codec: null
+  # Low-pass every clip here. Just below 8 kHz, resamplers leave a fingerprint: real clips
+  # resampled from 44.1 kHz showed a steep cut-off that the 16 kHz generator clips lacked,
+  # and one feature in that band alone separated real from AI (ROC-AUC 0.99). null = off.
+  lowpass_hz: 7000
+  # Scale every clip to this RMS level (dBFS), so loudness cannot separate the classes
+  # (mastered real music is often louder). Clips are turned down if a peak would clip.
+  target_rms_dbfs: -20
 
 windows:
   # Tracks are cut into overlapping windows. Each window gets a score; window scores are

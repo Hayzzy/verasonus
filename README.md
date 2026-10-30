@@ -172,7 +172,8 @@ rules.
    split column. Rows with the same `group_id` (an FMA artist, otherwise a track) stay
    together.
 5. `python scripts/standardise_audio.py` writes a 16 kHz mono FLAC copy of every clip to
-   `interim/`, processed the same way for real and AI audio. Add `--audit 200` to compare
+   `interim/`, processed the same way for real and AI audio (low-passed at 7 kHz and
+   matched in loudness, because both separated the classes on their own). Add `--audit 200` to compare
    bandwidth per generator. Rerunning skips clips that are already done.
 6. `python scripts/extract_features.py` cuts every clip into windows and saves one feature
    vector per window to `processed/handcrafted/` (`--limit 200` for a quick trial). It runs

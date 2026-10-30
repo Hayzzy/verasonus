@@ -64,6 +64,8 @@ class AudioConfig:
     storage_format: str = "FLAC"
     storage_subtype: str = "PCM_16"
     shared_codec: dict[str, Any] | None = None
+    lowpass_hz: float | None = 7000.0
+    target_rms_dbfs: float | None = -20.0
 
 
 @dataclass(frozen=True)
@@ -151,6 +153,9 @@ def _resolve(value: str | Path) -> Path:
 def _validate(cfg: Config) -> None:
     if cfg.audio.target_sample_rate <= 0:
         raise ValueError("audio.target_sample_rate must be positive")
+    lowpass = cfg.audio.lowpass_hz
+    if lowpass is not None and not 0 < lowpass < cfg.audio.target_sample_rate / 2:
+        raise ValueError("audio.lowpass_hz must be between 0 and half the sample rate")
     windows = cfg.windows
     if windows.length_seconds <= 0 or windows.hop_seconds <= 0:
         raise ValueError("windows.length_seconds and windows.hop_seconds must be positive")

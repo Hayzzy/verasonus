@@ -2,10 +2,13 @@ import numpy as np
 import pytest
 import soundfile as sf
 
-from verasonus.config import AudioConfig
+from verasonus.config import AudioConfig, load_config
+from verasonus.features.handcrafted import high_band_energy
 from verasonus.preprocessing.standardise import (
     effective_bandwidth_hz,
     interim_path,
+    lowpass,
+    match_loudness,
     standardise_file,
 )
 
@@ -57,3 +60,25 @@ def test_effective_bandwidth_finds_the_highest_tone(tmp_path, tone):
     silent = tmp_path / "silent.wav"
     sf.write(silent, np.zeros(16_000, dtype=np.float32), 16_000)
     assert effective_bandwidth_hz(silent) == 0.0
+
+
+def test_lowpass_removes_the_top_band(tone, peak_hz):
+    mix = tone(1_000, 16_000) + tone(7_600, 16_000)
+    out = lowpass(mix, 16_000, 7_000)
+    assert high_band_energy(out, 16_000, cutoff_hz=7_300) < 1e-4
+    assert peak_hz(out, 16_000) == pytest.approx(1_000, abs=2)
+
+
+def test_match_loudness_sets_rms_without_clipping(tone):
+    quiet = tone(440, 16_000, amplitude=0.01)
+    out = match_loudness(quiet, -20.0)
+    assert 20 * np.log10(np.sqrt(np.mean(out**2))) == pytest.approx(-20.0, abs=0.01)
+    spiky = np.zeros(16_000, dtype=np.float32)
+    spiky[0] = 0.5  # one loud click: the -20 dB target would need a peak far above 1
+    assert np.abs(match_loudness(spiky, -20.0)).max() == pytest.approx(0.99)
+    assert not match_loudness(np.zeros(10, dtype=np.float32), -20.0).any()
+
+
+def test_lowpass_setting_is_validated():
+    with pytest.raises(ValueError):
+        load_config(overrides={"audio.lowpass_hz": 9_000})
