@@ -1,8 +1,8 @@
 """Add a "split" column to the metadata table (works now; needs data/metadata.csv).
 
 Usage:
-    python scripts/make_splits.py                  # random split by track, stratified by label
-    python scripts/make_splits.py --holdout udio   # also hold a generator out as test_unseen
+    python scripts/make_splits.py                     # split by group_id, stratified by label
+    python scripts/make_splits.py --holdout musicgen  # also hold a generator out as test_unseen
 """
 
 import argparse
@@ -15,7 +15,7 @@ from verasonus.data.splits import generator_holdout_split, group_split
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Assign train/val/test splits by track.")
+    parser = argparse.ArgumentParser(description="Assign train/val/test splits by group.")
     parser.add_argument("--metadata", type=Path, help="defaults to <data_root>/metadata.csv")
     parser.add_argument("--holdout", nargs="*", help="generators to hold out as test_unseen")
     parser.add_argument("--out", type=Path, help="defaults to overwriting --metadata")

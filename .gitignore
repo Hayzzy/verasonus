@@ -82,5 +82,6 @@ npm-debug.log*
 Thumbs.db
 desktop.ini
 
-# --- Claude Code personal settings (shared project settings may be committed) ---
+# --- Local AI assistant files (kept out of the repo) ---
 .claude/settings.local.json
+CLAUDE.md

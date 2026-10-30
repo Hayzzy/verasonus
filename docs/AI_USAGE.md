@@ -1,97 +1,16 @@
 # AI usage log
 
-Our course requires us to document AI assistance. Add an entry for every session in which an
-AI tool helped. Keep each entry factual: what was asked, what the AI produced, what we checked
-or changed, and what is still ours to do.
+Our course requires us to document AI assistance. We used an AI coding assistant (Claude Code)
+for parts of this project. Each entry says what we asked for, what it produced and how we
+checked it. Model, feature, evaluation and augmentation logic is ours to write.
 
-| Date | Tool | Prompted by | Summary |
+| Date | Asked for | What the assistant produced | How we checked it |
 |---|---|---|---|
-| 2026-10-27 | Claude Code (Claude Opus 5.5) | Shrey Yadav | Phase 0 repository scaffold |
+| 2026-10-27 | Repository setup | Structure (approved by us), configs, tested utilities (config, audio I/O, windowing, splits, dataset registry), stubs for everything else, web app and extension skeletons, CI, docs | Tests, lint and builds pass; web app checked in a browser |
+| 2026-10-27 | Local training instead of Colab | Hardware and PyTorch compatibility check; docs updated for local training (Colab kept as fallback) | Read through the changes |
+| 2026-10-27 | First datasets | Downloaded FakeMusicCaps, FMA small and FMA metadata; found 6 FMA clips that cannot be decoded | Checksums match the published ones; every clip decoded |
+| 2026-10-27 | Clip table | `scan`, `build_metadata`, `validate_metadata`; a `group_id` so no FMA artist spans two splits | 14 new tests; table of 35,599 clips validated |
+| 2026-10-30 | Splits and standardised audio | Ran the splits; `standardise_file`, `effective_bandwidth_hz` and `scripts/standardise_audio.py` (16 kHz mono FLAC copies of every clip) | 4 new tests; all 35,599 clips converted; bandwidth similar across real and AI clips |
 
----
-
-## 2026-10-27 · Phase 0 repository scaffold
-
-**Tool.** Claude Code desktop app, model Claude Opus 5.5.
-
-**Prompted by.** Shrey Yadav. Inputs were the team's project brief and the slides from the
-first presentation (`VeraSonus - Group34.pptx`).
-
-**What we asked for.**
-- Propose a repository structure and wait for approval.
-- Python packaging with pinned requirements, and YAML configs.
-- Module stubs, plus small tested utilities.
-- A React + Tailwind web app and a Manifest V3 extension skeleton, themed like the slides.
-- pytest tests and GitHub Actions CI.
-- README, `docs/DATA.md`, `CLAUDE.md` and this log.
-- A first commit, a private GitHub repo, and Sushant (`MSSushant`) as collaborator.
-
-**Decisions the team made.**
-- Approved the proposed structure.
-- Repo lives at `Hayzzy/verasonus` on Shrey's account, with Sushant as collaborator. GitHub
-  allows two owners only through an organisation.
-- Private repository, MIT licence.
-- Node.js installed as a portable copy in Shrey's user folder, not system-wide.
-
-**What the AI did.**
-- **Theme:** read the slide deck (colours, fonts, layout motifs) to build the web theme, and
-  recreated the title-slide look in CSS instead of reusing the deck's stock photo.
-- **Online checks:** current package versions, and dataset facts (licences, access, sizes).
-  Pins use releases that were at least a week old where possible.
-- **Code:** wrote every file in the first commit.
-  - Implemented: config loading, audio loading and resampling, windowing, track-level and
-    generator-held-out splits, and the dataset registry.
-  - Everything else (features, models, ensemble, evaluation, augmentation, API inference) is
-    documented stubs for the team to implement.
-- **Tests and CI:** 32 pytest tests using synthetic audio only, plus a GitHub Actions workflow
-  (ruff, pytest, web build, extension build).
-- **Icons and visuals:** the logo icons (`scripts/make_icons.py`) and the README screenshot.
-
-**How it was checked.**
-- ruff and all 32 tests pass locally (Python 3.14).
-- The web app type-checks and builds, and was inspected in a browser at desktop and phone
-  widths, including the file-upload preview.
-- The extension compiles.
-
-**Follow-up the same day: local training instead of Colab.** Shrey asked to train on a personal
-PC instead of Colab.
-- Claude checked the hardware: RTX 5070 Laptop GPU (8 GB VRAM), 32 GB RAM, a 24-core CPU and a
-  free 1 TB SSD for data.
-- It confirmed that PyTorch's CUDA 13.0 build supports this GPU on Windows with Python 3.14,
-  and that the rest of the deep learning stack has matching wheels.
-- It updated the docs, configs and docstrings to a local-first workflow. The Colab notebook
-  stays as an optional fallback.
-- Nothing heavy was installed without the team's approval.
-
-**Follow-up the same day: first datasets.** Shrey asked Claude to set up the data drive and
-download two open datasets.
-- `.env` (not in git) sets `VERASONUS_DATA_ROOT=D:/verasonus-data`.
-- FakeMusicCaps (Zenodo record 15063698) and FMA small were downloaded into `raw/fakemusiccaps/`
-  and `raw/fma/`. Both matched their published checksums and were unzipped. The macOS metadata
-  folder (`__MACOSX`) from the FakeMusicCaps zip was moved to the Recycle Bin.
-- Claude decoded every clip with `load_audio`:
-  - FakeMusicCaps: all 27,605 clips load (5 generators × 5,521; 16 kHz mono WAV, 10.0–10.24 s).
-  - FMA small: 7,994 of 8,000 load. Six known-broken files (098565, 098567, 098569, 099134,
-    108925, 133297) must be left out.
-- FMA's metadata (`fma_metadata.zip`) was downloaded the same way. Its `tracks.csv` lists all
-  8,000 FMA small clips with genre (8 genres × 1,000 clips), artist and licence.
-- No audio went into git. In the repository, only this log changed.
-
-**Follow-up the same day: clip table.** Shrey asked Claude to build the clip table for the two
-downloaded datasets.
-- Claude implemented `scan` for FMA and FakeMusicCaps (`data/sources.py`) and
-  `build_metadata` and `validate_metadata` (`data/metadata.py`), and finished
-  `scripts/build_metadata.py`.
-- It added a `group_id` column (the artist for FMA, otherwise the track) and made splits group
-  by it, so no FMA artist lands in two splits. FakeMusicCaps clips stay separate groups:
-  every caption exists for every generator, so grouping them would break
-  leave-one-generator-out.
-- The six broken FMA clips are listed under `exclude` in `configs/datasets.yaml`.
-- 14 new tests use a tiny synthetic data root. All 46 tests and ruff pass.
-- `D:/verasonus-data/metadata.csv` now has 35,599 rows (7,994 FMA, 27,605 FakeMusicCaps). Both
-  split protocols ran on it in memory without errors, and no artist spans two splits.
-
-**Left for the team.**
-- All model, feature, augmentation and evaluation logic.
-- Re-check dataset licences before downloading.
-- Request access to Melody or Machine.
+Decisions were ours throughout: the structure, the private repo and MIT licence, which
+datasets to use, and training locally.
