@@ -64,6 +64,7 @@ The same facts are machine-readable in [`configs/datasets.yaml`](../configs/data
 ├── interim/<source>/    standardised audio: mono, target sample rate, FLAC / PCM_16
 │                        (scripts/standardise_audio.py; mirrors raw/, so raw/x/y.mp3 -> interim/x/y.flac)
 ├── processed/           features, embeddings and caches
+│                        (processed/<name>/: features.npy, windows.csv, columns.txt)
 └── metadata.csv         one row per clip
 ```
 
