@@ -71,7 +71,7 @@ class WindowConfig:
     length_seconds: float = 10.0
     hop_seconds: float = 5.0
     pad_last: bool = True
-    min_last_seconds: float = 2.0
+    min_last_seconds: float = 8.0
 
 
 @dataclass(frozen=True)
