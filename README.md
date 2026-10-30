@@ -178,6 +178,9 @@ rules.
 6. `python scripts/extract_features.py` cuts every clip into windows and saves one feature
    vector per window to `processed/handcrafted/` (`--limit 200` for a quick trial). It runs
    once the feature functions in `features/handcrafted.py` are written.
+7. `python scripts/train.py --model gradient_boosting` tunes on val and scores test, and
+   `python scripts/unseen_generators.py` reruns it once per AI generator with that generator
+   held out, to see how well it catches a generator it never saw.
 
 ## Evaluation
 
