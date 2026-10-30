@@ -14,6 +14,7 @@ checked it.
 | 2026-10-30 | Window fix and feature caching | Raised `min_last_seconds` to 8 so no window is mostly padding; `features/cache.py` and `scripts/extract_features.py` (runs the feature functions on every window and saves the results) | Window counts checked on the real clip table; 5 new tests; trial on 400 real clips with a stand-in feature |
 | 2026-10-30 | First classical baseline | Handcrafted features, classical models (SVM, random forest, gradient boosting), metrics and `scripts/train.py` | 9 new tests; trained and evaluated on our data |
 | 2026-10-30 | Check the near-perfect baseline for shortcuts | Found that one feature in the 6.4–8 kHz band measured the resampler, not AI (controlled re-resampling test); added a 7 kHz low-pass and loudness matching to standardisation | 3 new tests; low-pass comparison on a 12% sample; full rebuild and retrain |
+| 2026-10-31 | Unseen-generator test | `scripts/unseen_generators.py` (holds each generator out in turn, retrains, scores it) | Ran all five folds; real test clips identical across folds; seen scores match the main baseline |
 
 Decisions were ours throughout: the structure, the private repo and MIT licence, which
 datasets to use, and training locally.
