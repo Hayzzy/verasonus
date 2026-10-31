@@ -55,7 +55,7 @@ export function HowItWorks() {
           return (
             <li key={title}>
               <div className="flex items-center gap-4">
-                <span className={`ring-badge size-16 shrink-0 ${last ? 'bg-card-warm' : ''}`}>
+                <span className={`ring-badge glass-tile size-16 shrink-0 ${last ? 'bg-card-warm' : ''}`}>
                   <Icon className="size-7" strokeWidth={1.5} />
                 </span>
                 {!last && (
