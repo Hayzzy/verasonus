@@ -1,7 +1,9 @@
-import { FileMusic, Mic, ShieldCheck, Upload, X } from 'lucide-react'
-import { type DragEvent, useEffect, useId, useState } from 'react'
+import { FileMusic, LoaderCircle, Mic, ShieldCheck, Upload, X } from 'lucide-react'
+import { type DragEvent, useEffect, useId, useRef, useState } from 'react'
 
+import { type AnalysisResult, analyzeTrack } from '../lib/api'
 import { formatBytes, formatDuration, type WaveformPreview, waveformPeaks } from '../lib/audio'
+import { ResultPanel } from './ResultPanel'
 import { Waveform } from './Waveform'
 
 const ACCEPT = '.mp3,.wav,.flac,.ogg,.opus,.m4a,.aac,audio/*'
@@ -10,13 +12,40 @@ const MAX_MB = 50
 
 type Preview = WaveformPreview | 'loading' | 'unreadable'
 
-/** Upload panel. Picks a file and previews it locally; analysis is wired up in Phase 3. */
+/** Upload panel: pick a file, preview it locally, send it to the API and show the result. */
 export function UploadCard() {
   const inputId = useId()
   const [file, setFile] = useState<File | null>(null)
   const [preview, setPreview] = useState<Preview>('loading')
   const [dragging, setDragging] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
+  const [result, setResult] = useState<AnalysisResult | null>(null)
+  const [analysing, setAnalysing] = useState(false)
+  const request = useRef<AbortController | null>(null)
+
+  async function analyse() {
+    if (!file) return
+    request.current?.abort()
+    const controller = new AbortController()
+    request.current = controller
+    setAnalysing(true)
+    setMessage(null)
+    try {
+      setResult(await analyzeTrack(file, controller.signal))
+    } catch (error) {
+      if (!controller.signal.aborted) setMessage((error as Error).message)
+    } finally {
+      if (request.current === controller) setAnalysing(false)
+    }
+  }
+
+  function clear() {
+    request.current?.abort()
+    setFile(null)
+    setResult(null)
+    setAnalysing(false)
+    setMessage(null)
+  }
 
   useEffect(() => {
     if (!file) return
@@ -42,7 +71,7 @@ export function UploadCard() {
       setMessage(`Files up to ${MAX_MB} MB for now.`)
       return
     }
-    setMessage(null)
+    clear()
     setFile(candidate)
   }
 
@@ -61,7 +90,7 @@ export function UploadCard() {
       <div className="flex items-center justify-between gap-4">
         <p className="eyebrow">Analyse a track</p>
         <span className="rounded-full bg-pill px-3 py-1 text-xs font-semibold text-apricot">
-          Preview
+          Prototype
         </span>
       </div>
 
@@ -69,10 +98,8 @@ export function UploadCard() {
         <SelectedFile
           file={file}
           preview={preview}
-          onClear={() => {
-            setFile(null)
-            setMessage(null)
-          }}
+          result={result}
+          onClear={clear}
         />
       ) : (
         <label
@@ -119,13 +146,19 @@ export function UploadCard() {
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
         <button
           type="button"
-          disabled={!file}
-          onClick={() =>
-            setMessage('The detector is still in training. Analysis switches on in Phase 3.')
-          }
+          disabled={!file || analysing}
+          onClick={analyse}
           className="h-12 rounded-full bg-linear-to-r from-flame to-ember font-display font-semibold text-white shadow-[0_10px_30px_-10px_rgb(255_122_0/0.8)] transition hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-apricot disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none disabled:hover:brightness-100"
         >
-          Analyse track
+          {analysing ? (
+            <span className="flex items-center justify-center gap-2">
+              <LoaderCircle className="size-4 animate-spin" /> Analysing…
+            </span>
+          ) : result ? (
+            'Analyse again'
+          ) : (
+            'Analyse track'
+          )}
         </button>
         <button
           type="button"
@@ -134,14 +167,14 @@ export function UploadCard() {
         >
           <Mic className="size-4" />
           Record a clip
-          <span className="rounded-full bg-pill px-2 py-0.5 text-[0.7rem] text-apricot">Phase 3</span>
+          <span className="rounded-full bg-pill px-2 py-0.5 text-[0.7rem] text-apricot">Soon</span>
         </button>
       </div>
 
       <p className="mt-5 flex items-start gap-2 text-sm text-mist">
         <ShieldCheck className="mt-0.5 size-4 shrink-0 text-apricot" />
-        In this preview your file never leaves your device. When analysis goes live, uploads
-        are deleted right after they are analysed.
+        Your file is sent to the VeraSonus API only when you press Analyse, and deleted as soon
+        as it has been analysed.
       </p>
     </div>
   )
@@ -150,10 +183,12 @@ export function UploadCard() {
 function SelectedFile({
   file,
   preview,
+  result,
   onClear,
 }: {
   file: File
   preview: Preview
+  result: AnalysisResult | null
   onClear: () => void
 }) {
   const ready = typeof preview === 'object'
@@ -181,16 +216,23 @@ function SelectedFile({
       </div>
       <div className="mt-5">
         {ready ? (
-          <Waveform peaks={preview.peaks} />
+          <Waveform
+            peaks={preview.peaks}
+            segments={result?.segments}
+            duration={result?.duration_seconds ?? preview.duration}
+          />
         ) : (
           <p className="grid h-16 place-items-center text-sm text-mist">
             {preview === 'loading' ? 'Reading audio…' : 'This browser cannot preview this file.'}
           </p>
         )}
         <p className="mt-3 text-xs text-ash">
-          Waveform of your file. Once analysis is live, the AI timeline colours it in.
+          {result
+            ? 'Coloured by AI probability: orange sounds AI-generated, grey sounds human.'
+            : 'Waveform of your file. After analysis, the AI timeline colours it in.'}
         </p>
       </div>
+      {result && <ResultPanel result={result} />}
     </div>
   )
 }

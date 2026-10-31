@@ -1,0 +1,12 @@
+{
+  "weights": {
+    "cnn": 0.7,
+    "gradient_boosting": 0.2,
+    "spectttra": 0.1
+  },
+  "temperature": 0.3594328184594803,
+  "verdict": {
+    "likely_ai": 0.7,
+    "likely_human": 0.3
+  }
+}

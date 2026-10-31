@@ -2,8 +2,9 @@
 
 For each clip, real or AI, the same steps run in the same order:
     decode -> mono -> resample to cfg.audio.target_sample_rate
+    -> cut long clips (full songs) to one excerpt (cfg.audio.long_clip_seconds)
     -> low-pass at cfg.audio.lowpass_hz -> scale to cfg.audio.target_rms_dbfs
-    -> optional shared lossy codec round trip (cfg.audio.shared_codec)
+    -> shared lossy codec round trip (cfg.audio.shared_codec), the same for every clip
     -> save as FLAC / PCM_16 under data/interim
 Afchar et al. (2024) show that detectors happily learn such shortcuts, so also audit the
 result: bandwidth, loudness and duration should not separate the classes on their own.
@@ -38,20 +39,14 @@ def interim_path(raw_path: str, audio_cfg: AudioConfig) -> str:
 
 
 def standardise_file(src: Path, dst: Path, audio_cfg: AudioConfig) -> AudioInfo:
-    """Standardise one file and return the properties of the written file."""
+    """Standardise one file and return the properties of the written file.
+
+    Clips longer than ``audio_cfg.long_clip_seconds`` are cut to one excerpt first.
+    """
     audio, sample_rate = load_audio(
         src, target_sr=audio_cfg.target_sample_rate, mono=audio_cfg.mono
     )
-    if audio_cfg.lowpass_hz:
-        audio = lowpass(audio, sample_rate, audio_cfg.lowpass_hz)
-    if audio_cfg.target_rms_dbfs is not None:
-        audio = match_loudness(audio, audio_cfg.target_rms_dbfs)
-    if audio_cfg.shared_codec:
-        # Imported here so standardising without a codec never needs ffmpeg.
-        from verasonus.augmentation.codecs import reencode
-
-        codec = audio_cfg.shared_codec
-        audio = reencode(audio, sample_rate, codec["codec"], int(codec["bitrate_kbps"]))
+    audio = standardise_audio(excerpt(audio, sample_rate, audio_cfg), sample_rate, audio_cfg)
     save_audio(
         dst,
         audio,
@@ -60,6 +55,32 @@ def standardise_file(src: Path, dst: Path, audio_cfg: AudioConfig) -> AudioInfo:
         subtype=audio_cfg.storage_subtype,
     )
     return audio_info(dst)
+
+
+def excerpt(audio: np.ndarray, sample_rate: int, audio_cfg: AudioConfig) -> np.ndarray:
+    """Cut a long clip to ``excerpt_seconds`` starting 40% in; shorter clips are unchanged."""
+    if not audio_cfg.long_clip_seconds or len(audio) <= audio_cfg.long_clip_seconds * sample_rate:
+        return audio
+    length = round(audio_cfg.excerpt_seconds * sample_rate)
+    start = int(0.4 * (len(audio) - length))
+    return audio[start : start + length]
+
+
+def standardise_audio(audio: np.ndarray, sample_rate: int, audio_cfg: AudioConfig) -> np.ndarray:
+    """Low-pass, loudness and shared codec for audio already at the target rate (in memory).
+
+    The same steps run for training clips (standardise_file) and for uploads in the API.
+    """
+    if audio_cfg.lowpass_hz:
+        audio = lowpass(audio, sample_rate, audio_cfg.lowpass_hz)
+    if audio_cfg.target_rms_dbfs is not None:
+        audio = match_loudness(audio, audio_cfg.target_rms_dbfs)
+    if audio_cfg.shared_codec:
+        from verasonus.augmentation.codecs import reencode
+
+        codec = audio_cfg.shared_codec
+        audio = reencode(audio, sample_rate, codec["codec"], int(codec["bitrate_kbps"]))
+    return audio
 
 
 def lowpass(audio: np.ndarray, sample_rate: int, cutoff_hz: float) -> np.ndarray:

@@ -13,6 +13,11 @@ class Segment(BaseModel):
     ai_probability: float = Field(ge=0, le=1)
 
 
+class StemScore(BaseModel):
+    name: Literal["vocals", "instrumental"]
+    ai_probability: float = Field(ge=0, le=1)
+
+
 class GeneratorGuess(BaseModel):
     name: str  # e.g. "suno"; "unknown" when the outlier detector fires
     probability: float = Field(ge=0, le=1)
@@ -32,10 +37,11 @@ class AnalysisResult(BaseModel):
     ai_probability: float = Field(
         ge=0, le=1, description="Calibrated probability that the track is AI-generated"
     )
-    verdict: Literal["likely_ai", "uncertain", "likely_human"]
+    verdict: Literal["likely_ai", "partly_ai", "uncertain", "likely_human"]
     confidence: float = Field(ge=0, le=1)
     duration_seconds: float
     segments: list[Segment]
+    stems: list[StemScore] = []  # separated vocals and instrumental, scored on their own
     generator: GeneratorGuess | None = None
     explanation: Explanation
     model_version: str

@@ -29,10 +29,13 @@ on new generators and simple edits. So we measure how detection holds up on gene
 model has never seen and after everyday edits (MP3 compression, pitch shift, phone
 re-recording), and we report those gaps as they are.
 
-> **Status: Phase 1 in progress.** Implemented and tested: config loading, audio loading and
-> resampling, windowing, splits, the dataset registry, the clip table for FMA and
-> FakeMusicCaps, and audio standardisation. Everything else is a documented stub (`NotImplementedError("Phase N")`) for
-> the team to build. See the [roadmap](#roadmap).
+> **Status: working prototype (model v2).** Upload a track in the web app and get a verdict
+> (likely AI, partly AI or likely human), an AI probability, separate scores for the vocals
+> and the instrumental, a segment timeline, a generator guess and the features behind the
+> score. It comes from an ensemble of our CNN, gradient boosting and the pretrained SONICS
+> SpecTTTra, trained on Suno, Udio and five research generators. Results, including where the detector fails, are in
+> [docs/RESULTS.md](docs/RESULTS.md). Parts still open are documented stubs
+> (`NotImplementedError`); see the [roadmap](#roadmap).
 
 ## How the course requirements map to the code
 
@@ -176,13 +179,37 @@ rules.
    matched in loudness, because both separated the classes on their own). Add `--audit 200` to compare
    bandwidth per generator. Rerunning skips clips that are already done.
 6. `python scripts/extract_features.py` cuts every clip into windows and saves one feature
-   vector per window to `processed/handcrafted/` (`--limit 200` for a quick trial). It runs
-   once the feature functions in `features/handcrafted.py` are written.
-7. `python scripts/train.py --model gradient_boosting` tunes on val and scores test, and
+   vector per window to `processed/handcrafted/` (`--limit 200` for a quick trial).
+   `--features mel` saves a log-mel spectrogram of each window to `processed/mel/` instead
+   (about 7 GB), the input for the CNN.
+7. `python scripts/train.py --model gradient_boosting` (or `--model cnn`, on the GPU) trains
+   on train, tunes on val and scores test, and
    `python scripts/unseen_generators.py` reruns it once per AI generator with that generator
    held out, to see how well it catches a generator it never saw. Both call a clip AI above a
    threshold picked on val so that at most 5% of real clips are flagged
    (`evaluation.max_fpr_real`).
+8. `python scripts/fit_ensemble.py` fuses the CNN and gradient boosting, calibrates the fused
+   score and compares the three on test. `python scripts/fit_generator_id.py` trains the
+   generator classifier and the "unknown" detector, maps how generators cluster and ranks
+   the handcrafted features. Both save what the API needs to `checkpoints/` and their
+   tables and figures to `reports/`.
+
+## Run the prototype
+
+After steps 1–8 (or with the four model files `cnn.pt`, `gradient_boosting.joblib`,
+`ensemble.joblib` and `generator_id.joblib` copied into `checkpoints/`). The first run also
+downloads the pretrained SpecTTTra and Demucs weights. Needs `pip install -r
+requirements/ml.txt`, plus `sonics` and `demucs`:
+
+```bash
+uvicorn verasonus.api.main:app --port 8000   # needs torch (CPU is enough)
+cd web && npm run dev                         # http://localhost:5173
+```
+
+Drop an MP3, WAV, FLAC or OGG file of at least 8 seconds on the upload card and press
+Analyse. The API standardises the audio exactly like the training clips, scores 10-second
+windows with all three models, separates and scores the vocals and instrumental, and deletes
+the upload when it is done.
 
 ## Evaluation
 
@@ -206,9 +233,14 @@ We report the following, and never inflate it:
 ## Roadmap
 
 - [x] **Phase 0:** repository scaffold, configs, tested utilities, web and extension skeletons, CI, docs
-- [ ] **Phase 1:** data pipeline, metadata table, splits, augmentation suite, classical baselines
-- [ ] **Phase 2:** deep models, embedding probes, ensemble, calibration, full evaluation reports
-- [ ] **Phase 3:** FastAPI service and the polished PWA web app (the working prototype)
+- [x] **Phase 1:** data pipeline, metadata table, splits, classical baselines, SONICS, the
+  MP3 robustness edits (open: AAC/Opus and phone re-recording, which need ffmpeg)
+- [x] **Phase 2:** CNN, ensemble with the pretrained SpecTTTra, calibration, Demucs vocals and
+  instrumental scores, generator ID, clustering, "unknown" detector, feature importance,
+  Grad-CAM, evaluation reports (open: training with pitch and tempo edits, Transformer,
+  MERT/CLAP probes)
+- [x] **Phase 3:** FastAPI `/analyze` and the web app showing its results, including the
+  "partly AI" verdict (open: microphone recording, history, share card, hosting)
 - [ ] **Phase 4:** Chrome extension (tab capture), then iPhone options
 - [ ] **Throughout:** report-ready figures and tables saved to `reports/`
 

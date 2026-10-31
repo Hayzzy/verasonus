@@ -1,6 +1,6 @@
 # Robustness suite. Each edit is applied to held-out test audio to measure how detection
 # degrades (one report per edit). Training can sample from the same list to narrow the gap.
-# Codec edits need ffmpeg: preinstalled on Colab, install it locally before Phase 1.
+# MP3 is encoded in memory with soundfile; AAC, Opus and phone playback still need ffmpeg.
 
 codecs:                       # bitrates in kbps
   mp3: [320, 192, 128, 64]
@@ -9,6 +9,8 @@ codecs:                       # bitrates in kbps
 
 pitch_shift_semitones: [-2, -1, 1, 2]
 time_stretch_rates: [0.9, 0.95, 1.05, 1.1]
+# Pitch and tempo together, like "slowed" and "sped up" uploads.
+speed_factors: [0.8, 0.9, 1.1, 1.25]
 noise_snr_db: [30, 20, 10]    # added noise at these signal-to-noise ratios
 loudness_lufs: [-23, -14]     # broadcast and streaming loudness targets
 

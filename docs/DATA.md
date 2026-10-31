@@ -25,7 +25,13 @@ The same facts are machine-readable in [`configs/datasets.yaml`](../configs/data
 
 ### Notes per source
 
-- **SONICS.** The AI songs are MP3 files (`fake_songs/*.mp3`) on Hugging Face and Kaggle.
+- **SONICS.** In use: all 49,074 AI songs are downloaded (10 zips, 32.6 GB, into
+  `raw/sonics/fake_songs/part_XX/`, with `fake_songs.csv` beside them). Model v2 trains on
+  parts 1–4 (20,000 songs). Each song keeps SONICS's own split, so the pretrained SONICS
+  models are never tested on their own training songs. The songs are low-bitrate MP3s
+  (about 37 kbps), so every clip in our table is re-encoded with one shared 32 kbps MP3
+  codec (`audio.shared_codec`). Songs over 60 s are cut to a 20 s excerpt starting 40% in.
+  The AI songs are MP3 files (`fake_songs/*.mp3`) on Hugging Face and Kaggle.
   Real songs are only listed as YouTube IDs in `real_songs.csv`. Downloading YouTube audio may
   break YouTube's terms, so check with the module team first. Otherwise, use FMA or
   MTG-Jamendo as the real side and match genres where possible.
@@ -43,7 +49,9 @@ The same facts are machine-readable in [`configs/datasets.yaml`](../configs/data
   Respect each track's NC/ND/SA terms and keep attribution. For MTG-Jamendo, `--type audio-low`
   saves space (~156 GB for `raw_30s`). For FMA, also download `fma_metadata.zip`: its
   `tracks.csv` gives each clip's genre, artist and licence. Six fma_small clips cannot be
-  decoded, so `exclude` in `configs/datasets.yaml` skips them.
+  decoded, so `exclude` in `configs/datasets.yaml` skips them. `fma_medium.zip` (25,000
+  clips, 22 GiB) is downloaded but not yet in the clip table. It would add more real music,
+  including more songs with vocals. Where a track is in both, fma_small's copy wins.
 - **MUSDB18-HQ.** Following Deezer's 2026 work (Rigaud et al.), we pass chosen stems through
   a neural audio codec such as EnCodec and remix them. That gives hybrid tracks where we know
   exactly which parts are "AI".

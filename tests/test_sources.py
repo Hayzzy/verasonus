@@ -66,4 +66,36 @@ def test_scan_rejects_unknown_and_unimplemented_sources(tmp_path):
     with pytest.raises(KeyError):
         scan("nope", tmp_path)
     with pytest.raises(NotImplementedError):
-        scan("sonics", tmp_path)
+        scan("mtg_jamendo", tmp_path)
+
+
+def test_scan_fma_prefers_fma_small_for_tracks_also_in_fma_medium(data_root):
+    root = data_root / "raw" / "fma"
+    save_audio(root / "fma_medium" / "000" / "000002.wav", np.zeros(1600, np.float32), 16_000)
+    with pytest.warns(UserWarning, match="000011"):
+        records = list(scan("fma", root))
+    assert [r.path for r in records][0] == "raw/fma/fma_small/000/000002.wav"
+    assert len(records) == 3
+
+
+def test_scan_sonics_groups_both_versions_of_a_prompt(tmp_path):
+    root = tmp_path / "raw" / "sonics"
+    rows = [
+        ("fake_7_suno_0", 7, "chirp-v3.5", "pop", "train"),
+        ("fake_7_suno_1", 7, "chirp-v3.5", "pop", "train"),
+        ("fake_9_udio_0", 9, "udio-120s", "rock", "valid"),
+    ]
+    import pandas as pd
+
+    root.mkdir(parents=True)
+    pd.DataFrame(rows, columns=["filename", "id", "algorithm", "genre", "split"]).to_csv(
+        root / "fake_songs.csv", index=False
+    )
+    for name, *_ in rows:
+        save_audio(root / "fake_songs" / f"{name}.wav", np.zeros(1600, np.float32), 16_000)
+    records = list(scan("sonics", root))
+    assert [r.generator for r in records] == ["suno_v3.5", "suno_v3.5", "udio_120s"]
+    assert records[0].group_id == records[1].group_id == "sonics/7"
+    assert records[2].group_id == "sonics/9"
+    assert all(r.label == "ai" for r in records)
+    assert [r.split for r in records] == ["train", "train", "val"]

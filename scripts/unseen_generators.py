@@ -1,7 +1,7 @@
 """Leave-one-generator-out test: how well does a model catch a generator it never saw?
 
 For each AI generator in turn, every window of that generator is taken out of train, val and
-test and becomes "test_unseen". A classical model is tuned and trained on the rest, then
+test and becomes "test_unseen". The model is trained on the rest (as in train.py), then
 scored on:
   * seen:   the usual test split (real clips + the other generators)
   * unseen: the held-out generator's clips + the same real test clips
@@ -12,31 +12,39 @@ threshold picked on the fold's val clips (evaluation.max_fpr_real).
 Usage:
     python scripts/unseen_generators.py                   # gradient boosting, all generators
     python scripts/unseen_generators.py --model random_forest
+    python scripts/unseen_generators.py --model cnn       # five CNN trainings: about an hour
 """
 
 import argparse
 import json
 
-import numpy as np
 import pandas as pd
 
-# Run as a script, so scripts/ is on the import path and train.py's metric helper is reused.
-from train import CLASSICAL, clip_scores, clip_threshold, evaluate
+# Run as a script, so scripts/ is on the import path and train.py's helpers are reused.
+from train import (
+    DEFAULT_FEATURES,
+    TRAINABLE,
+    clip_scores,
+    clip_threshold,
+    evaluate,
+    fit,
+    load_inputs,
+)
 
 from verasonus.config import load_config
 from verasonus.data.splits import UNSEEN
-from verasonus.features.cache import load_feature_table
-from verasonus.models.classical import train_classical
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Leave-one-generator-out evaluation.")
-    parser.add_argument("--model", choices=CLASSICAL, default="gradient_boosting")
-    parser.add_argument("--features", default="handcrafted", help="folder under processed/")
+    parser.add_argument("--model", choices=TRAINABLE, default="gradient_boosting")
+    parser.add_argument("--features", help="folder under processed/ (default: by model)")
+    parser.add_argument("--epochs", type=int, help="deep models: overrides deep.epochs")
     args = parser.parse_args()
+    args.features = args.features or DEFAULT_FEATURES[args.model]
 
     cfg = load_config()
-    windows, features, _ = load_feature_table(cfg.paths.processed / args.features)
+    windows, x = load_inputs(args.model, args.features, cfg)
     y = (windows["label"] == "ai").to_numpy(dtype=int)
     max_fpr = float(cfg.raw["evaluation"]["max_fpr_real"])
     generators = sorted(windows.loc[windows["label"] == "ai", "generator"].unique())
@@ -44,19 +52,13 @@ def main() -> None:
     folds = {}
     for generator in generators:
         split = windows["split"].where(windows["generator"] != generator, UNSEEN).to_numpy()
-
-        def part(name: str, split: np.ndarray = split) -> tuple[np.ndarray, np.ndarray]:
-            mask = split == name
-            return features[mask], y[mask]
-
-        model, val_metrics = train_classical(
-            args.model, *part("train"), *part("val"), seed=cfg.seed
-        )
+        print(f"--- holding out {generator}")
+        _, val_metrics, score = fit(args.model, x, y, split, cfg, args.epochs)
         val = split == "val"
-        threshold = clip_threshold(model, windows[val], features[val], max_fpr)
+        threshold = clip_threshold(windows[val], score(val), max_fpr)
         scored = (split == "test") | (split == UNSEEN)
         fold = windows[scored].assign(split=split[scored])
-        clips = clip_scores(fold, model.predict_proba(features[scored])[:, 1])
+        clips = clip_scores(fold, score(scored))
         clip_split = fold.groupby("clip_id")["split"].first()
         seen = clips[clip_split == "test"]
         real = seen[seen["y"] == 0]

@@ -93,3 +93,43 @@ def test_handcrafted_features_fill_the_table(setup):
     windows, features, columns = build_feature_table(df, cfg, extract_handcrafted)
     assert features.shape == (6, len(columns))
     assert np.isfinite(features).all()
+
+
+def test_spectrogram_cache_matches_the_windows(setup, tmp_path):
+    from verasonus.features.cache import build_spectrogram_cache, load_spectrogram_cache
+
+    cfg, df = setup
+    windows = build_spectrogram_cache(df, cfg, tmp_path / "mel")
+    loaded, specs, settings = load_spectrogram_cache(tmp_path / "mel")
+
+    assert windows["clip_id"].tolist() == ["real/a"] * 5 + ["ai/b"]
+    pd.testing.assert_frame_equal(loaded, windows)
+    assert specs.dtype == np.float16
+    assert specs.shape == (6, settings["n_mels"], settings["n_frames"])
+    assert np.isfinite(specs).all()
+    # The short final window and a full one cover the same first seconds of a steady tone.
+    np.testing.assert_allclose(specs[4], specs[0], atol=0.5)
+
+
+def test_training_edits_are_seeded_and_keep_the_length(tmp_path, tone):
+    import soundfile as sf
+
+    from verasonus.config import load_config
+    from verasonus.features.cache import edit_for, load_clip
+    from verasonus.preprocessing.standardise import standardise_file
+
+    cfg = load_config(overrides={"paths.data_root": str(tmp_path)})
+    raw = tmp_path / "raw" / "x" / "clip.wav"
+    raw.parent.mkdir(parents=True)
+    sf.write(raw, tone(440, 44_100, seconds=12.0), 44_100)
+    interim = tmp_path / "interim" / "x" / "clip.flac"
+    standardise_file(raw, interim, cfg.audio)
+    clip = pd.Series({"clip_id": "x/clip", "path": "raw/x/clip.wav", "split": "train"})
+
+    assert edit_for(pd.Series({**clip, "split": "test"}), cfg, 1.0) is None
+    edit = edit_for(clip, cfg, 1.0)
+    first, again = load_clip(interim, cfg, edit), load_clip(interim, cfg, edit)
+    plain = load_clip(interim, cfg)
+    assert len(first) == len(plain)
+    assert np.array_equal(first, again)
+    assert not np.allclose(first, plain)

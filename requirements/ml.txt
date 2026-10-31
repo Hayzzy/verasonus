@@ -8,3 +8,8 @@ transformers==5.20.2
 demucs==4.1.0
 onnx==1.23.2
 onnxruntime==1.31.0
+# Pretrained SONICS SpecTTTra (models/deep.load_spectttra). Install it with --no-deps: its
+# own pins would replace our torch build. timm and einops are what it needs at runtime.
+#   pip install --no-deps "sonics @ git+https://github.com/awsaf49/sonics.git@9156ffad151f797c71556923c4a02fa01fa8fc91"
+timm==1.0.30
+einops==0.8.2

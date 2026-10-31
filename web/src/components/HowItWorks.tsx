@@ -10,22 +10,22 @@ const STEPS = [
   {
     icon: SlidersHorizontal,
     title: 'Pre-process',
-    text: 'Resampled, cut into short windows, optionally split into stems.',
+    text: 'Resampled to 16 kHz, low-passed, loudness-matched, MP3-encoded like the training songs and cut into 10-second windows.',
   },
   {
     icon: AudioWaveform,
     title: 'Features',
-    text: 'Spectral features, mel and CQT spectrograms, MERT and CLAP embeddings.',
+    text: 'Handcrafted spectral features and log-mel spectrograms of every window, for the full mix and for the vocals and instrumental, separated with Demucs.',
   },
   {
     icon: Cpu,
     title: 'Models',
-    text: 'Classical ML, CNN and Transformer models and embedding probes, in an ensemble.',
+    text: 'Our CNN on spectrograms, gradient boosting on features and the pretrained SONICS SpecTTTra, fused and calibrated.',
   },
   {
     icon: Gauge,
     title: 'Output',
-    text: 'A calibrated AI score, a segment timeline, the likely generator and why.',
+    text: 'Likely AI, partly AI (one stem) or likely human, with a calibrated score, a timeline, the likely generator and why.',
   },
 ]
 
