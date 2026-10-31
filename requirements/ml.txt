@@ -2,7 +2,11 @@
 # torch is deliberately NOT listed here: install the CUDA build for your GPU first.
 # RTX 50-series GPUs need CUDA 12.8 or newer:
 #   pip install torch --index-url https://download.pytorch.org/whl/cu130
-# (Colab already ships torch.)
+# Then torchvision (timm needs it) and torchaudio (sonics needs it) from the same index, so
+# pip does not pull CPU-only builds from PyPI. --no-deps keeps your torch in place; torchaudio
+# stops at 2.11 on cu130, which still works with torch 2.14:
+#   pip install --no-deps torchvision torchaudio --index-url https://download.pytorch.org/whl/cu130
+# (Colab already ships torch, torchvision and torchaudio.)
 -r base.txt
 transformers==5.20.2
 demucs==4.1.0

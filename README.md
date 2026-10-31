@@ -125,6 +125,7 @@ We train on our own machine with an NVIDIA GPU.
    agree as a team first. RTX 50-series GPUs need a CUDA 12.8+ build:
    ```bash
    pip install torch --index-url https://download.pytorch.org/whl/cu130
+   pip install --no-deps torchvision torchaudio --index-url https://download.pytorch.org/whl/cu130
    pip install -r requirements/ml.txt
    python -c "import torch; print(torch.cuda.is_available(), torch.cuda.get_device_name(0))"
    ```
@@ -201,7 +202,9 @@ After steps 1–8, or with the trained model files from the private
 `gradient_boosting.joblib`, `ensemble.joblib`, `generator_id.joblib`) saved in
 `checkpoints/`, e.g. `gh release download v2-models --dir checkpoints`. The first run also
 downloads the pretrained SpecTTTra and Demucs weights. Needs `pip install -r
-requirements/ml.txt`, plus `sonics` and `demucs`:
+requirements/ml.txt`, plus `sonics` and `demucs`. `sonics` also needs `torchaudio`, and
+`timm` needs `torchvision`: install both from the PyTorch index as in step 2 of
+[Training on your own PC](#training-on-your-own-pc-gpu), or pip fetches CPU-only builds:
 
 ```bash
 uvicorn verasonus.api.main:app --port 8000   # needs torch (CPU is enough)
