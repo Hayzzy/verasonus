@@ -1,0 +1,8 @@
+{
+  "generator_id_test_clips": {
+    "accuracy": 0.7732122260668973,
+    "macro_f1": 0.7553054730527178,
+    "n": 6936
+  },
+  "kmeans_adjusted_rand_index": 0.11534875213214453
+}

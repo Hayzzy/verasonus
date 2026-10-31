@@ -1,7 +1,8 @@
 """Registry of data sources (configs/datasets.yaml) and scanners for downloaded audio.
 
-``scan`` lists the clips of a downloaded source as ClipRecords. It is implemented for FMA and
-FakeMusicCaps so far (Phase 1). ``download`` is still a stub; docs/DATA.md has the steps.
+``scan`` lists the clips of a downloaded source as ClipRecords. It is implemented for FMA,
+FakeMusicCaps and the SONICS AI songs. ``download`` is still a stub; docs/DATA.md has the
+steps.
 """
 
 from __future__ import annotations
@@ -90,6 +91,7 @@ def _scan_fma(source: DataSource, root: Path) -> Iterator[ClipRecord]:
     """FMA: ``fma_<subset>/<NNN>/<track id>.mp3``, described by ``fma_metadata/tracks.csv``.
 
     A clip's group is its artist, so a split never puts one artist's songs in two places.
+    fma_medium contains every fma_small track; such duplicates keep their fma_small path.
     """
     tracks_csv = root / "fma_metadata" / "tracks.csv"
     if not tracks_csv.is_file():
@@ -99,14 +101,19 @@ def _scan_fma(source: DataSource, root: Path) -> Iterator[ClipRecord]:
     genres = tracks[("track", "genre_top")].to_dict()
     licences = tracks[("track", "license")].to_dict()
 
-    seen: dict[str, Path] = {}
+    chosen: dict[str, Path] = {}
     for path in _audio_files(root):
         name = path.stem
         if name in source.exclude:
             continue
-        if name in seen:
-            raise ValueError(f"FMA track {name} appears twice: {seen[name]} and {path}")
-        seen[name] = path
+        if name in chosen:
+            subsets = {chosen[name].relative_to(root).parts[0], path.relative_to(root).parts[0]}
+            if subsets != {"fma_small", "fma_medium"}:
+                raise ValueError(f"FMA track {name} appears twice: {chosen[name]} and {path}")
+            if path.relative_to(root).parts[0] != "fma_small":
+                continue
+        chosen[name] = path
+    for name, path in sorted(chosen.items(), key=lambda item: item[1].relative_to(root).as_posix()):
         track = int(name) if name.isdigit() else None
         if track not in artists:
             warnings.warn(f"skipping {path}: not a track in tracks.csv", stacklevel=2)
@@ -158,9 +165,55 @@ def _scan_fakemusiccaps(source: DataSource, root: Path) -> Iterator[ClipRecord]:
             yield record
 
 
+# SONICS "algorithm" column -> generator name
+SONICS_GENERATORS = {
+    "chirp-v2-xxl-alpha": "suno_v2",
+    "chirp-v3": "suno_v3",
+    "chirp-v3.5": "suno_v3.5",
+    "udio-30s": "udio_30s",
+    "udio-120s": "udio_120s",
+}
+
+
+def _scan_sonics(source: DataSource, root: Path) -> Iterator[ClipRecord]:
+    """SONICS AI songs: MP3s named ``fake_<id>_<suno|udio>_<n>``, described by fake_songs.csv.
+
+    Suno made two songs per prompt, so a song's group is its prompt id. Each song keeps the
+    split SONICS gave it (their "valid" is our "val"), so the pretrained SONICS models are
+    only ever tested on songs they were not trained on. The real songs (YouTube ids only)
+    are not used.
+    """
+    table = pd.read_csv(root / "fake_songs.csv", low_memory=False).set_index("filename")
+    for path in _audio_files(root):
+        name = path.stem
+        if name in source.exclude:
+            continue
+        if name not in table.index:
+            warnings.warn(f"skipping {path}: not in fake_songs.csv", stacklevel=2)
+            continue
+        row = table.loc[name]
+        clip_id = f"sonics/{name}"
+        record = _record(
+            path,
+            root,
+            clip_id=clip_id,
+            track_id=clip_id,
+            group_id=f"sonics/{row['id']}",
+            source_dataset=source.key,
+            label="ai",
+            generator=SONICS_GENERATORS[row["algorithm"]],
+            licence=source.licence,
+            genre=_text(row["genre"]),
+            split={"valid": "val"}.get(row["split"], row["split"]),
+        )
+        if record is not None:
+            yield record
+
+
 _SCANNERS: dict[str, Callable[[DataSource, Path], Iterator[ClipRecord]]] = {
     "fma": _scan_fma,
     "fakemusiccaps": _scan_fakemusiccaps,
+    "sonics": _scan_sonics,
 }
 
 

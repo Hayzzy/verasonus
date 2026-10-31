@@ -16,15 +16,36 @@ if TYPE_CHECKING:
 
 
 def fit_temperature(logits: np.ndarray, labels: np.ndarray) -> float:
-    """Find the temperature that minimises validation log-loss."""
-    raise NotImplementedError("Phase 2")
+    """Find the temperature that minimises validation log-loss.
+
+    Searched between 0.05 and 20: with perfectly separated classes the loss keeps falling as
+    the temperature shrinks, so the bound keeps the scores from collapsing to exactly 0 or 1.
+    """
+    from scipy.optimize import minimize_scalar
+
+    logits = np.asarray(logits, dtype=float)
+    labels = np.asarray(labels, dtype=float)
+
+    def loss(t: float) -> float:
+        p = np.clip(apply_temperature(logits, t), 1e-12, 1 - 1e-12)
+        return float(-np.mean(labels * np.log(p) + (1 - labels) * np.log(1 - p)))
+
+    return float(minimize_scalar(loss, bounds=(0.05, 20.0), method="bounded").x)
 
 
 def apply_temperature(logits: np.ndarray, temperature: float) -> np.ndarray:
     """Calibrated probabilities from logits."""
-    raise NotImplementedError("Phase 2")
+    return 1 / (1 + np.exp(-np.asarray(logits, dtype=float) / temperature))
+
+
+def to_logits(probs: np.ndarray, eps: float = 1e-6) -> np.ndarray:
+    """Logits from probabilities, so averaged model scores can be temperature-scaled."""
+    p = np.clip(np.asarray(probs, dtype=float), eps, 1 - eps)
+    return np.log(p / (1 - p))
 
 
 def fit_isotonic(scores: np.ndarray, labels: np.ndarray) -> IsotonicRegression:
     """Monotonic mapping from raw scores to calibrated probabilities."""
-    raise NotImplementedError("Phase 2")
+    from sklearn.isotonic import IsotonicRegression
+
+    return IsotonicRegression(out_of_bounds="clip").fit(scores, labels)

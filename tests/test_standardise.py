@@ -47,9 +47,19 @@ def test_standardise_writes_mono_flac_at_target_rate(tmp_path, tone, peak_hz):
 def test_shared_codec_goes_through_reencode(tmp_path, tone):
     src = tmp_path / "in.wav"
     sf.write(src, tone(440, 16_000), 16_000)
-    cfg = AudioConfig(shared_codec={"codec": "mp3", "bitrate_kbps": 192})
-    with pytest.raises(NotImplementedError):  # reencode is still a Phase 1 stub
-        standardise_file(src, tmp_path / "out.flac", cfg)
+    cfg = AudioConfig(shared_codec={"codec": "mp3", "bitrate_kbps": 32})
+    info = standardise_file(src, tmp_path / "out.flac", cfg)
+    assert info.frames == 16_000  # same length after the MP3 round trip
+
+
+def test_long_clips_are_cut_to_one_excerpt(tmp_path, tone):
+    src = tmp_path / "song.wav"
+    sf.write(src, tone(440, 16_000, seconds=90.0), 16_000)
+    cfg = AudioConfig(long_clip_seconds=60, excerpt_seconds=20)
+    assert standardise_file(src, tmp_path / "out.flac", cfg).frames == 20 * 16_000
+    short = tmp_path / "clip.wav"
+    sf.write(short, tone(440, 16_000, seconds=30.0), 16_000)
+    assert standardise_file(short, tmp_path / "out2.flac", cfg).frames == 30 * 16_000
 
 
 def test_effective_bandwidth_finds_the_highest_tone(tmp_path, tone):

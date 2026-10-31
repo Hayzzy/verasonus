@@ -66,6 +66,8 @@ class AudioConfig:
     shared_codec: dict[str, Any] | None = None
     lowpass_hz: float | None = 7000.0
     target_rms_dbfs: float | None = -20.0
+    long_clip_seconds: float | None = None
+    excerpt_seconds: float = 20.0
 
 
 @dataclass(frozen=True)

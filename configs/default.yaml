@@ -22,9 +22,10 @@ audio:
   mono: true
   storage_format: FLAC      # lossless storage after resampling
   storage_subtype: PCM_16
-  # Optional lossy codec applied to ALL clips, e.g. {codec: mp3, bitrate_kbps: 192},
-  # so compression history cannot separate the classes. null = off.
-  shared_codec: null
+  # Lossy codec applied to ALL clips (and every upload), so compression history cannot
+  # separate the classes: the SONICS AI songs are ~37 kbps MP3s, the FMA real songs
+  # 128-320 kbps. null = off.
+  shared_codec: {codec: mp3, bitrate_kbps: 32}
   # Low-pass every clip here. Just below 8 kHz, resamplers leave a fingerprint: real clips
   # resampled from 44.1 kHz showed a steep cut-off that the 16 kHz generator clips lacked,
   # and one feature in that band alone separated real from AI (ROC-AUC 0.99). null = off.
@@ -32,6 +33,11 @@ audio:
   # Scale every clip to this RMS level (dBFS), so loudness cannot separate the classes
   # (mastered real music is often louder). Clips are turned down if a peak would clip.
   target_rms_dbfs: -20
+  # Clips longer than this (full songs, e.g. SONICS) are cut to one excerpt of
+  # excerpt_seconds, starting 40% into the song, so every source gives similar numbers of
+  # windows and full songs do not outnumber the 30-second FMA clips. Uploads are never cut.
+  long_clip_seconds: 60
+  excerpt_seconds: 20
 
 windows:
   # Tracks are cut into overlapping windows. Each window gets a score; window scores are
@@ -53,6 +59,27 @@ splits:
   generator_column: generator
   # Generators held out completely ("test_unseen") for unseen-generator tests.
   holdout_generators: []
+
+spectrogram:
+  # Log-mel input for the deep models (scripts/extract_features.py --features mel).
+  # The mel scale stops at audio.lowpass_hz, so the band above it is never seen.
+  n_mels: 128
+  n_fft: 1024
+  hop_length: 320           # 20 ms at 16 kHz
+  # Each window's spectrogram covers its first this-many seconds. It must not exceed
+  # windows.min_last_seconds, so no zero padding (found only on real clips) is ever included.
+  seconds: 8.0
+
+deep:
+  # CNN training (scripts/train.py --model cnn). Sized for an 8 GB GPU.
+  epochs: 15
+  batch_size: 64
+  lr: 0.001
+  weight_decay: 0.0001
+  patience: 4               # stop after this many epochs without a better val ROC-AUC
+  spec_augment: true        # mask a random band of frequencies and of time in each example
+  balance_classes: true     # weight the loss so real and AI windows count equally
+  mmap: true                # read spectrograms from disk (the full cache is larger than RAM)
 
 evaluation:
   # A track is called AI when its score passes a threshold chosen on the val split: the

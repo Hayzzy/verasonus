@@ -12,6 +12,8 @@ def test_health():
     assert response.json() == {"status": "ok", "version": __version__}
 
 
-def test_analyze_is_not_available_yet():
+def test_analyze_rejects_bad_input_cleanly():
+    # 503 without model files (as in CI), otherwise 422 because this is not audio.
     response = client.post("/analyze", files={"file": ("clip.wav", b"not real audio", "audio/wav")})
-    assert response.status_code == 501
+    assert response.status_code in (422, 503)
+    assert isinstance(response.json()["detail"], str)
