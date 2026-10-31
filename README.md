@@ -196,8 +196,10 @@ rules.
 
 ## Run the prototype
 
-After steps 1–8 (or with the four model files `cnn.pt`, `gradient_boosting.joblib`,
-`ensemble.joblib` and `generator_id.joblib` copied into `checkpoints/`). The first run also
+After steps 1–8, or with the trained model files from the private
+[`v2-models` release](https://github.com/Hayzzy/verasonus/releases/tag/v2-models) (`cnn.pt`,
+`gradient_boosting.joblib`, `ensemble.joblib`, `generator_id.joblib`) saved in
+`checkpoints/`, e.g. `gh release download v2-models --dir checkpoints`. The first run also
 downloads the pretrained SpecTTTra and Demucs weights. Needs `pip install -r
 requirements/ml.txt`, plus `sonics` and `demucs`:
 
