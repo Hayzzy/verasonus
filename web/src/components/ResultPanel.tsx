@@ -39,7 +39,7 @@ export function ResultPanel({ result }: { result: AnalysisResult }) {
   return (
     <div className="mt-5 space-y-5" aria-live="polite">
       <div className="flex items-center gap-4">
-        <span className="ring-badge size-14 shrink-0 bg-card-warm">
+        <span className="ring-badge glass-tile size-14 shrink-0">
           <Icon className="size-6 text-apricot" strokeWidth={1.6} />
         </span>
         <div>
@@ -56,7 +56,7 @@ export function ResultPanel({ result }: { result: AnalysisResult }) {
       {(result.stems ?? []).length > 0 && (
         <div className="grid grid-cols-2 gap-3">
           {result.stems.map((stem) => (
-            <div key={stem.name} className="rounded-xl border border-ember/60 px-4 py-3">
+            <div key={stem.name} className="glass-tile rounded-xl border border-ember/60 px-4 py-3">
               <p className="eyebrow">{STEMS[stem.name]}</p>
               <p className="mt-1 font-display text-2xl font-bold text-gradient">
                 {percent(stem.ai_probability)}

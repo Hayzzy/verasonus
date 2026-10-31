@@ -10,7 +10,7 @@ export function Header() {
         <Logo className="size-9" />
         <span className="font-display text-xl font-bold tracking-[-0.03em]">VeraSonus</span>
       </a>
-      <span className="rounded-full border border-ember/80 bg-ink/50 px-3.5 py-1 text-sm text-white/90 backdrop-blur-md">
+      <span className="glass rounded-full px-3.5 py-1 text-sm text-white/90">
         Prototype
       </span>
     </header>

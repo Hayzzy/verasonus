@@ -26,7 +26,7 @@ export default function App() {
               {OUTPUTS.map((output) => (
                 <li
                   key={output}
-                  className="rounded-full border border-ember px-4 py-1.5 text-[0.95rem] text-white/90"
+                  className="glass-tile rounded-full border border-ember px-4 py-1.5 text-[0.95rem] text-white/90"
                 >
                   {output}
                 </li>

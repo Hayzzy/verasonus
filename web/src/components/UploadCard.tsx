@@ -89,7 +89,7 @@ export function UploadCard() {
     <div className="card relative bg-card/85 p-5 shadow-[0_40px_120px_-40px_rgb(255_122_0/0.55)] backdrop-blur-xl sm:p-7">
       <div className="flex items-center justify-between gap-4">
         <p className="eyebrow">Analyse a track</p>
-        <span className="rounded-full bg-pill px-3 py-1 text-xs font-semibold text-apricot">
+        <span className="glass rounded-full px-3 py-1 text-xs font-semibold text-apricot">
           Prototype
         </span>
       </div>
@@ -110,11 +110,11 @@ export function UploadCard() {
           }}
           onDragLeave={onDragLeave}
           onDrop={onDrop}
-          className={`mt-5 flex cursor-pointer flex-col items-center rounded-2xl border border-dashed px-6 py-10 text-center transition-colors focus-within:border-apricot sm:py-12 ${
+          className={`glass-tile mt-5 flex cursor-pointer flex-col items-center rounded-2xl border border-dashed px-6 py-10 text-center focus-within:border-apricot sm:py-12 ${
             dragging ? 'border-apricot bg-card-warm' : 'border-ash hover:border-ember'
           }`}
         >
-          <span className="ring-badge size-16 bg-card-warm">
+          <span className="ring-badge glass-tile size-16">
             <Upload className="size-7" strokeWidth={1.5} />
           </span>
           <span className="mt-5 font-display text-xl font-semibold tracking-[-0.02em]">
@@ -148,7 +148,7 @@ export function UploadCard() {
           type="button"
           disabled={!file || analysing}
           onClick={analyse}
-          className="h-12 rounded-full bg-linear-to-r from-flame to-ember font-display font-semibold text-white shadow-[0_10px_30px_-10px_rgb(255_122_0/0.8)] transition hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-apricot disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none disabled:hover:brightness-100"
+          className="glass-primary h-12 rounded-full font-display font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-apricot disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
         >
           {analysing ? (
             <span className="flex items-center justify-center gap-2">
@@ -163,7 +163,7 @@ export function UploadCard() {
         <button
           type="button"
           disabled
-          className="flex h-12 items-center justify-center gap-2 rounded-full border border-ember font-display font-semibold text-white/80 disabled:cursor-not-allowed"
+          className="glass flex h-12 items-center justify-center gap-2 rounded-full font-display font-semibold text-white/80 disabled:cursor-not-allowed"
         >
           <Mic className="size-4" />
           Record a clip
@@ -193,7 +193,7 @@ function SelectedFile({
 }) {
   const ready = typeof preview === 'object'
   return (
-    <div className="mt-5 rounded-2xl border border-ember/70 bg-linear-to-b from-card-warm-top to-card-warm p-4 sm:p-5">
+    <div className="glass-tile mt-5 rounded-2xl border border-ember/70 p-4 sm:p-5">
       <div className="flex items-center gap-4">
         <span className="ring-badge size-12 shrink-0">
           <FileMusic className="size-5" strokeWidth={1.6} />
@@ -209,7 +209,7 @@ function SelectedFile({
           type="button"
           onClick={onClear}
           aria-label="Remove file"
-          className="rounded-full p-2 text-mist transition hover:bg-white/5 hover:text-white focus-visible:outline-2 focus-visible:outline-apricot"
+          className="glass rounded-full p-2 text-mist hover:text-white focus-visible:outline-2 focus-visible:outline-apricot"
         >
           <X className="size-5" />
         </button>
